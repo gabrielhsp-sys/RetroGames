@@ -21,6 +21,12 @@ Este arquivo orienta qualquer assistente de IA usado neste repositório. O Retro
 
 Se duas referências se contradizem, aponte o conflito e pergunte ao estudante qual seguir. Não escolha uma interpretação sem avisar.
 
+### Construção aula a aula
+
+O projeto é construído em etapas, e este arquivo descreve o sistema completo. Muitas classes citadas aqui ainda não existem na aula atual. Antes de propor algo, confira o que já existe no repositório e faça só o que o roteiro da aula pede. Não peça, não crie e não altere arquivos de aulas futuras. Ordem das aulas: aula 1, ambiente, banco e modelos; aula 2, Repository; aula 3, Services (`BusinessErrors`, `BusinessRuleException` e a transação na gravação de jogo com gêneros); aula 4, API de leitura (`Program.cs`, envelope, `ResponseCodes` 0 a 3, `GlobalExceptionHandler`, Swagger e rotas GET); aula 5, API de gravação (ApiModels de entrada, validators, POST/PUT/DELETE); aula 6, autenticação e proteção da administração; aula 7, front-end público (projeto React com Vite, acesso à API, rotas, catálogo e detalhe do jogo); aula 8, front-end com login, sessão e telas de administração. O módulo de Compras vem depois, nas aulas 9 e 10. Os testes unitários são uma tarefa adicional, feita fora das aulas; só crie testes quando o estudante estiver nessa tarefa.
+
+A especificação descreve o sistema pronto. Quando o roteiro da aula deixa algo da especificação para uma aula posterior (por exemplo, esconder jogos inativos de quem não é administrador, que entra na aula 6), isso não é conflito: siga o roteiro e não implemente a parte adiada. Só pergunte ao estudante quando o roteiro e a especificação disserem coisas diferentes sobre o que deve ser feito agora.
+
 ## 3. Regras do projeto
 
 ### Stack
@@ -63,8 +69,9 @@ Se duas referências se contradizem, aponte o conflito e pergunte ao estudante q
 
 - Toda regra de negócio fica aqui, inclusive as que o banco também garante.
 - Dados de várias tabelas são combinados com LINQ e devolvidos em um ServiceModel (exemplo: `JogoDetalheServiceModel`). Filtro que depende de outra tabela também é resolvido aqui, com LINQ (exemplo: filtro por gênero no `JogoService`).
-- Erros de negócio: `throw new BusinessRuleException(BusinessErrors.X)`.
-- `RegistroDuplicadoException` vinda do Repository vira o erro de negócio correspondente (exemplo: `PlataformaNomeDuplicado`).
+- Erros de negócio ficam no catálogo `BusinessErrors` (projeto Services), no formato `(Code, DefaultMessage, Status)`, a partir do código 100. O `Status` é o status HTTP do erro: `HttpStatusCode.BadRequest` (400) para regra violada, `NotFound` (404) para registro não encontrado e `Conflict` (409) para conflito com dados já gravados (nome duplicado, registro com dependentes). O Service lança sempre `throw new BusinessRuleException(BusinessErrors.X)`; não há outras exceções de negócio.
+- Erro de "não encontrado" segue o nome `{ENTIDADE}_NAO_ENCONTRADO(A)`, um por entidade (exemplo: `PLATAFORMA_NAO_ENCONTRADA`).
+- `RegistroDuplicadoException` vinda do Repository vira o erro de negócio correspondente (exemplo: `PLATAFORMA_NOME_DUPLICADO`).
 - Transação só quando a operação grava mais de um comando, sempre neste formato:
 
 ```csharp
@@ -90,15 +97,15 @@ using (var transactionScope = new TransactionScope(TransactionScopeOption.Requir
 ### API
 
 - Toda resposta usa o envelope `{ "responseCode", "data", "errorMessage" }`.
-- Códigos em `ResponseCodes.cs`, sequenciais: `SUCESSO = 0`, `ERRO = 1` e, a partir de 2, tuplas `(Code, DefaultMessage)`. Código novo recebe o próximo número livre.
-- Status HTTP: 200, 201, 400, 401, 403, 404, 409 e 500. Exclusões respondem 200 com o envelope; a API não usa 204.
+- Códigos da própria API em `ResponseCodes.cs` (0 a 99), sequenciais: `SUCESSO = 0`, `ERRO = 1` e, a partir de 2, tuplas `(Code, DefaultMessage)`. Erros de negócio não se repetem aqui: o envelope devolve o código do `BusinessErrors` que o Service lançou. Código novo recebe o próximo número livre do seu catálogo.
+- Status HTTP: 200, 201, 400, 401, 403, 404, 409 e 500. Para `BusinessRuleException`, o `GlobalExceptionHandler` usa o `Status` do erro do catálogo; o `responseCode` diz qual regra. 401 e 403 vêm da autenticação. Exclusões respondem 200 com o envelope; a API não usa 204.
 
 ### Segurança
 
 - No curso, por simplicidade, a aplicação acessa o MySQL com o usuário local do estudante (por exemplo, `root`). Em sistemas reais, ela usaria um usuário próprio, só com as permissões necessárias.
 - Connection string e senha do administrador inicial ficam no arquivo `.env`, na raiz do repositório, que está no `.gitignore` (como no Node): `ConnectionStrings__Default`, `AdminInicial__Email` e `AdminInicial__Senha`. O modelo versionado é o `.env.example`, só com `SUA_SENHA` no lugar das senhas. A API carrega o `.env` com o pacote DotNetEnv. Os `appsettings*.json` são versionados e nunca têm senha. Não use `dotnet user-secrets`. Nunca escreva credenciais em arquivo versionado, nem em exemplos.
 - Senhas são guardadas apenas como hash (`PasswordHasher`).
-- Sessão por cookie com proteção CSRF; não guarde token no `localStorage`.
+- Sessão por cookie `HttpOnly` e `SameSite=Strict`; não guarde token no `localStorage`. O `SameSite=Strict` é a defesa contra CSRF deste projeto: por simplicidade, não há token antiforgery (`AddAntiforgery`, cabeçalho `X-CSRF-TOKEN`). Não o implemente sem pedido do professor.
 - `bin/`, `obj/`, `node_modules/` e `dist/` não são versionados.
 
 ## 4. Como trabalhar com o estudante
