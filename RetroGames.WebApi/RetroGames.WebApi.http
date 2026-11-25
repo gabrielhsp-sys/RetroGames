@@ -37,3 +37,45 @@ DELETE {{RetroGames.WebApi_HostAddress}}/api/Plataforma/1
 
 ### 500, 1: repita qualquer GET com o MySQL parado (docker stop retrogames_mysql; depois docker start)
 GET {{RetroGames.WebApi_HostAddress}}/api/Jogo
+
+### Respostas de acesso (aula 6, etapa 4). Comece sem sessão. A senha do administrador
+### está no .env (AdminInicial__Senha): troque SUA_SENHA só na hora de testar e não salve.
+
+### 401, 4 (gravação sem login)
+POST {{RetroGames.WebApi_HostAddress}}/api/Plataforma
+Content-Type: application/json
+
+{ "nome": "Plataforma de Teste", "fabricante": "Fabricante", "anoLancamento": 1990 }
+
+### 401, 6 (senha errada)
+POST {{RetroGames.WebApi_HostAddress}}/api/Autenticacao/login
+Content-Type: application/json
+
+{ "email": "admin@retrogames.local", "senha": "senha-errada" }
+
+### 400, 3, com os campos em data (e-mail mal formado)
+POST {{RetroGames.WebApi_HostAddress}}/api/Autenticacao/login
+Content-Type: application/json
+
+{ "email": "admin.retrogames.local", "senha": "SUA_SENHA" }
+
+### 200, 0 (login do administrador: a resposta traz o cookie retrogames.sessao)
+POST {{RetroGames.WebApi_HostAddress}}/api/Autenticacao/login
+Content-Type: application/json
+
+{ "email": "admin@retrogames.local", "senha": "SUA_SENHA" }
+
+### 201, 0 (gravação logado como administrador)
+POST {{RetroGames.WebApi_HostAddress}}/api/Plataforma
+Content-Type: application/json
+
+{ "nome": "Plataforma de Teste", "fabricante": "Fabricante", "anoLancamento": 1990 }
+
+### 200, 0, só jogos ativos (rode sem login)
+GET {{RetroGames.WebApi_HostAddress}}/api/Jogo?incluirInativos=true
+
+### 200, 0 (logout) e, em seguida, 401, 4 (eu sem sessão)
+POST {{RetroGames.WebApi_HostAddress}}/api/Autenticacao/logout
+
+###
+GET {{RetroGames.WebApi_HostAddress}}/api/Autenticacao/eu
