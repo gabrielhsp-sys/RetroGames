@@ -1,5 +1,7 @@
 using FluentValidation;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 using RetroGames.WebApi.ActionFilters;
 using RetroGames.WebApi.ApiModels;
 using RetroGames.WebApi.Configuration;
@@ -30,9 +32,18 @@ builder.Services.AddValidatorsFromAssemblyContaining<Program>();
 builder.Services.AddControllers(opcoes => opcoes.Filters.Add<FluentValidationFilter>())
     .ConfigureApiBehaviorOptions(opcoes =>
     {
-        // JSON quebrado ou tipo errado (ex.: ?pagina=abc): 400 com código 3, no envelope, sem lista de campos.
-        opcoes.InvalidModelStateResponseFactory = _ => new BadRequestObjectResult(new RetroGamesResponseApiModel(
-            ResponseCodes.MODEL_STATE_INVALIDO.Code, ResponseCodes.MODEL_STATE_INVALIDO.DefaultMessage));
+        // O [ApiController] confere o model binding antes do FluentValidationFilter.
+        // Corpo ausente numa action que espera um: 400 com código 2 (MODEL_NULL).
+        // JSON quebrado ou tipo errado (ex.: ?pagina=abc): 400 com código 3, sem lista de campos.
+        opcoes.InvalidModelStateResponseFactory = contexto =>
+        {
+            var esperaCorpo = contexto.ActionDescriptor.Parameters
+                .Any(parametro => parametro.BindingInfo?.BindingSource == BindingSource.Body);
+            var semCorpo = contexto.HttpContext.Request.ContentLength == 0
+                || contexto.HttpContext.Features.Get<IHttpRequestBodyDetectionFeature>()?.CanHaveBody == false;
+            var codigo = esperaCorpo && semCorpo ? ResponseCodes.MODEL_NULL : ResponseCodes.MODEL_STATE_INVALIDO;
+            return new BadRequestObjectResult(new RetroGamesResponseApiModel(codigo.Code, codigo.DefaultMessage));
+        };
     });
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 builder.Services.AddProblemDetails();
