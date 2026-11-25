@@ -1,1 +1,39 @@
 @RetroGames.WebApi_HostAddress = http://localhost:5080
+
+### Contrato da API (aula 5, etapa 4). Esperado ao lado de cada requisição: status e responseCode.
+
+### 200, 0
+GET {{RetroGames.WebApi_HostAddress}}/api/Plataforma
+
+### 201, 0 (data com o id gerado; cabeçalho Location /api/Plataforma/{id})
+POST {{RetroGames.WebApi_HostAddress}}/api/Plataforma
+Content-Type: application/json
+
+{ "nome": "Plataforma de Teste", "fabricante": "Fabricante", "anoLancamento": 1990 }
+
+### 400, 3, com os campos em data (nome e anoLancamento)
+POST {{RetroGames.WebApi_HostAddress}}/api/Plataforma
+Content-Type: application/json
+
+{ "nome": "", "fabricante": "Fabricante", "anoLancamento": 1800 }
+
+### 400, 3, sem campos (JSON quebrado: falta uma aspa)
+POST {{RetroGames.WebApi_HostAddress}}/api/Plataforma
+Content-Type: application/json
+
+{ "nome": "Sem aspa, "fabricante": "Fabricante", "anoLancamento": 1990 }
+
+### 404, 103
+GET {{RetroGames.WebApi_HostAddress}}/api/Jogo/9999
+
+### 409, 101 (nome já cadastrado)
+POST {{RetroGames.WebApi_HostAddress}}/api/Plataforma
+Content-Type: application/json
+
+{ "nome": "Super Nintendo", "fabricante": "Nintendo", "anoLancamento": 1990 }
+
+### 409, 102 (plataforma com jogos)
+DELETE {{RetroGames.WebApi_HostAddress}}/api/Plataforma/1
+
+### 500, 1: repita qualquer GET com o MySQL parado (docker stop retrogames_mysql; depois docker start)
+GET {{RetroGames.WebApi_HostAddress}}/api/Jogo
