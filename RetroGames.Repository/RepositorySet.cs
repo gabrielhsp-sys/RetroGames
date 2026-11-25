@@ -8,4 +8,5 @@ public class RepositorySet(RepositoryConfig config) : IRepositorySet
     public IJogoGeneroRepository JogoGenero { get; } = new JogoGeneroRepository(config);
     public IGeneroRepository Genero { get; } = new GeneroRepository(config);
     public ICondicaoJogoRepository CondicaoJogo { get; } = new CondicaoJogoRepository(config);
+    public IUsuarioRepository Usuario { get; } = new UsuarioRepository(config);
 }

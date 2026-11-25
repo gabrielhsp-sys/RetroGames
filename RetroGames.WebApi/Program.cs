@@ -2,6 +2,7 @@ using FluentValidation;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
+using RetroGames.Services;
 using RetroGames.WebApi.ActionFilters;
 using RetroGames.WebApi.ApiModels;
 using RetroGames.WebApi.Configuration;
@@ -50,6 +51,22 @@ builder.Services.AddProblemDetails();
 builder.Services.AddOpenApi();
 
 var app = builder.Build();
+
+// Administrador inicial (RS05): e-mail e senha vêm do .env. Se já existe um administrador, nada muda.
+// A senha só passa ao Service, que grava o hash; ela nunca vai para o log.
+var emailAdministrador = app.Configuration["AdminInicial:Email"];
+var senhaAdministrador = app.Configuration["AdminInicial:Senha"];
+if (string.IsNullOrWhiteSpace(emailAdministrador) || string.IsNullOrWhiteSpace(senhaAdministrador))
+{
+    throw new InvalidOperationException(
+        "Administrador inicial não configurado. Confira as linhas AdminInicial__Email e " +
+        "AdminInicial__Senha no arquivo .env da raiz do repositório (modelo em .env.example).");
+}
+using (var escopo = app.Services.CreateScope())
+{
+    var autenticacaoService = escopo.ServiceProvider.GetRequiredService<IAutenticacaoService>();
+    await autenticacaoService.GarantirAdministradorInicialAsync(emailAdministrador, senhaAdministrador);
+}
 
 // 2. Pipeline HTTP (a ordem importa)
 // Primeira etapa: qualquer exceção que suba das etapas seguintes vira envelope de erro.
