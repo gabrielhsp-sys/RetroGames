@@ -103,13 +103,14 @@ public class JogoRepository(RepositoryConfig config) : RepositoryBase(config), I
         await using var comando = CriarComando(conexao,
             "UPDATE tb_jogo SET no_jogo = @nome, ds_jogo = @descricao, " +
             "nu_ano_lancamento = @anoLancamento, vl_preco = @preco, qt_estoque = @estoque, " +
-            "co_plataforma = @idPlataforma, co_condicao_jogo = @idCondicaoJogo " +
+            "st_ativo = @ativo, co_plataforma = @idPlataforma, co_condicao_jogo = @idCondicaoJogo " +
             "WHERE co_seq_jogo = @id");
         AdicionarParametro(comando, "@nome", jogo.Nome);
         AdicionarParametro(comando, "@descricao", jogo.Descricao);
         AdicionarParametro(comando, "@anoLancamento", jogo.AnoLancamento);
         AdicionarParametro(comando, "@preco", jogo.Preco);
         AdicionarParametro(comando, "@estoque", jogo.Estoque);
+        AdicionarParametro(comando, "@ativo", jogo.Ativo);
         AdicionarParametro(comando, "@idPlataforma", jogo.IdPlataforma);
         AdicionarParametro(comando, "@idCondicaoJogo", jogo.IdCondicaoJogo);
         AdicionarParametro(comando, "@id", jogo.Id);

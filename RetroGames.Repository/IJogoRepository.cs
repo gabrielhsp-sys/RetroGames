@@ -20,7 +20,7 @@ public interface IJogoRepository
     /// <summary>Grava um novo jogo e devolve o id gerado pelo banco.</summary>
     Task<int> InserirAsync(Jogo jogo);
 
-    /// <summary>Atualiza os dados do jogo (não altera situação nem data de cadastro).</summary>
+    /// <summary>Atualiza os dados e a situação do jogo (o PUT pode reativá-lo). Não altera a data de cadastro.</summary>
     Task AlterarAsync(Jogo jogo);
 
     /// <summary>Marca o jogo como inativo (st_ativo). Jogo nunca é apagado.</summary>

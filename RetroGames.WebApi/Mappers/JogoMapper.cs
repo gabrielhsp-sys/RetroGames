@@ -1,3 +1,4 @@
+using RetroGames.Model.Model;
 using RetroGames.Services;
 using RetroGames.WebApi.ApiModels;
 
@@ -52,5 +53,31 @@ public static class JogoMapper
         TotalPaginas = request.TamanhoPagina > 0
             ? (int)Math.Ceiling(totalItens / (double)request.TamanhoPagina)
             : 0,
+    };
+
+    /// <summary>Corpo do POST → Jogo do modelo. Os gêneros vão ao Service à parte; o Service marca como ativo.</summary>
+    public static Jogo ParaModel(this InserirJogoRequestApiModel request) => new()
+    {
+        Nome = request.Nome,
+        Descricao = string.IsNullOrWhiteSpace(request.Descricao) ? null : request.Descricao,
+        AnoLancamento = request.AnoLancamento,
+        Preco = request.Preco,
+        Estoque = request.Estoque,
+        IdPlataforma = request.IdPlataforma,
+        IdCondicaoJogo = request.IdCondicaoJogo,
+    };
+
+    /// <summary>Corpo do PUT → Jogo do modelo. O id vem da rota, não do corpo.</summary>
+    public static Jogo ParaModel(this AlterarJogoRequestApiModel request, int id) => new()
+    {
+        Id = id,
+        Nome = request.Nome,
+        Descricao = string.IsNullOrWhiteSpace(request.Descricao) ? null : request.Descricao,
+        AnoLancamento = request.AnoLancamento,
+        Preco = request.Preco,
+        Estoque = request.Estoque,
+        Ativo = request.Ativo,
+        IdPlataforma = request.IdPlataforma,
+        IdCondicaoJogo = request.IdCondicaoJogo,
     };
 }

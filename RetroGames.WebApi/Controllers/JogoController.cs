@@ -31,4 +31,31 @@ public class JogoController(IJogoService jogoService) : ControllerBase
         var detalhe = await jogoService.BuscarPorIdAsync(id);
         return Ok(new RetroGamesResponseApiModel<ListarPorIdJogoResponseApiModel>(detalhe.ParaListarPorIdResponse()));
     }
+
+    /// <summary>POST /api/Jogo: grava o jogo e os gêneros (numa transação, no Service). 201 com o detalhe e o Location.</summary>
+    [HttpPost]
+    public async Task<ActionResult<RetroGamesResponseApiModel<ListarPorIdJogoResponseApiModel>>> Inserir(
+        InserirJogoRequestApiModel request)
+    {
+        var criado = await jogoService.InserirAsync(request.ParaModel(), request.IdsGeneros);
+        var detalhe = await jogoService.BuscarPorIdAsync(criado.Id);
+        return CreatedAtAction(nameof(ListarPorId), new { id = criado.Id },
+            new RetroGamesResponseApiModel<ListarPorIdJogoResponseApiModel>(detalhe.ParaListarPorIdResponse()));
+    }
+
+    /// <summary>PUT /api/Jogo/{id}: altera o jogo do id da rota e troca a lista de gêneros.</summary>
+    [HttpPut("{id:int}")]
+    public async Task<ActionResult<RetroGamesResponseApiModel>> Alterar(int id, AlterarJogoRequestApiModel request)
+    {
+        await jogoService.AlterarAsync(request.ParaModel(id), request.IdsGeneros);
+        return Ok(new RetroGamesResponseApiModel(ResponseCodes.SUCESSO.Code, null));
+    }
+
+    /// <summary>DELETE /api/Jogo/{id}: só desativa o jogo, nunca o apaga (RN03). Responde 200 com o envelope.</summary>
+    [HttpDelete("{id:int}")]
+    public async Task<ActionResult<RetroGamesResponseApiModel>> Excluir(int id)
+    {
+        await jogoService.DesativarAsync(id);
+        return Ok(new RetroGamesResponseApiModel(ResponseCodes.SUCESSO.Code, null));
+    }
 }
