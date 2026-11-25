@@ -46,6 +46,8 @@ builder.Services.AddControllers(opcoes => opcoes.Filters.Add<FluentValidationFil
             return new BadRequestObjectResult(new RetroGamesResponseApiModel(codigo.Code, codigo.DefaultMessage));
         };
     });
+builder.Services.AddAutenticacaoPorCookie();
+builder.Services.AddAuthorization();
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 builder.Services.AddProblemDetails();
 builder.Services.AddOpenApi();
@@ -78,6 +80,10 @@ if (app.Environment.IsDevelopment())
     app.MapOpenApi();
     app.UseSwaggerUI(opcoes => opcoes.SwaggerEndpoint("/openapi/v1.json", "RetroGames API v1"));
 }
+
+// Nesta ordem: quem é você (lê o cookie) e, depois, você pode (aplica [Authorize]).
+app.UseAuthentication();
+app.UseAuthorization();
 
 app.MapControllers();
 

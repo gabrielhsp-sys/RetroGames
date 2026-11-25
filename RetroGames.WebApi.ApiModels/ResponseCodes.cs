@@ -25,4 +25,16 @@ public static class ResponseCodes
     /// </summary>
     public static readonly (int Code, string DefaultMessage) MODEL_STATE_INVALIDO =
         (3, "Há um erro com o modelo enviado.");
+
+    /// <summary>Rota que exige login, chamada sem sessão (401).</summary>
+    public static readonly (int Code, string DefaultMessage) NAO_AUTENTICADO =
+        (4, "Faça login para continuar.");
+
+    /// <summary>Usuário logado sem o perfil exigido pela rota (403).</summary>
+    public static readonly (int Code, string DefaultMessage) ACESSO_NEGADO =
+        (5, "Você não tem permissão para esta operação.");
+
+    /// <summary>Login com e-mail inexistente, senha errada ou usuário inativo (401). Não diz qual dos três.</summary>
+    public static readonly (int Code, string DefaultMessage) CREDENCIAIS_INVALIDAS =
+        (6, "E-mail ou senha inválidos.");
 }
