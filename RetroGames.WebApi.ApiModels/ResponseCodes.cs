@@ -14,4 +14,15 @@ public static class ResponseCodes
     /// <summary>Exceção não tratada. Mensagem genérica, sem detalhes internos.</summary>
     public static readonly (int Code, string DefaultMessage) ERRO =
         (1, "Ocorreu um erro inesperado. Tente novamente mais tarde.");
+
+    /// <summary>A action esperava um corpo (ApiModel de entrada) e ele não veio.</summary>
+    public static readonly (int Code, string DefaultMessage) MODEL_NULL =
+        (2, "O modelo veio nulo.");
+
+    /// <summary>
+    /// Dados mal formados: erro de validator (com os erros por campo em data)
+    /// ou JSON quebrado / tipo errado (sem a lista de campos).
+    /// </summary>
+    public static readonly (int Code, string DefaultMessage) MODEL_STATE_INVALIDO =
+        (3, "Há um erro com o modelo enviado.");
 }

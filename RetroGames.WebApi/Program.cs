@@ -1,3 +1,7 @@
+using FluentValidation;
+using Microsoft.AspNetCore.Mvc;
+using RetroGames.WebApi.ActionFilters;
+using RetroGames.WebApi.ApiModels;
 using RetroGames.WebApi.Configuration;
 using RetroGames.WebApi.Middlewares;
 
@@ -21,7 +25,15 @@ if (string.IsNullOrWhiteSpace(connectionString))
 // 1. Serviços (injeção de dependência)
 builder.Services.AddRepositorios(connectionString);
 builder.Services.AddServicosDeNegocio();
-builder.Services.AddControllers();
+// Todos os validators deste projeto (IValidator<T>) e o filtro que os aplica antes de cada action.
+builder.Services.AddValidatorsFromAssemblyContaining<Program>();
+builder.Services.AddControllers(opcoes => opcoes.Filters.Add<FluentValidationFilter>())
+    .ConfigureApiBehaviorOptions(opcoes =>
+    {
+        // JSON quebrado ou tipo errado (ex.: ?pagina=abc): 400 com código 3, no envelope, sem lista de campos.
+        opcoes.InvalidModelStateResponseFactory = _ => new BadRequestObjectResult(new RetroGamesResponseApiModel(
+            ResponseCodes.MODEL_STATE_INVALIDO.Code, ResponseCodes.MODEL_STATE_INVALIDO.DefaultMessage));
+    });
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 builder.Services.AddProblemDetails();
 builder.Services.AddOpenApi();
