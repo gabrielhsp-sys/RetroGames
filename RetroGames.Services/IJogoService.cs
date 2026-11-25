@@ -1,3 +1,4 @@
+using RetroGames.Model.Filtros;
 using RetroGames.Model.Model;
 
 namespace RetroGames.Services;
@@ -7,12 +8,15 @@ public interface IJogoService
 {
     /// <summary>
     /// Uma página do catálogo, com o detalhe de cada jogo, e o total encontrado.
-    /// Cada filtro só vale quando informado. Por enquanto lista só jogos ativos.
+    /// Cada filtro só vale quando informado. Inativos só entram para o administrador
+    /// que pedir IncluirInativos (RN04); para os demais, o pedido é ignorado.
     /// </summary>
-    Task<(List<JogoDetalheServiceModel> Itens, int Total)> ListarAsync(
-        string? busca, int? idPlataforma, int? idGenero, int pagina, int tamanhoPagina);
+    Task<(List<JogoDetalheServiceModel> Itens, int Total)> ListarAsync(FiltroJogo filtro);
 
-    /// <summary>O detalhe do jogo. Se não existir, JOGO_NAO_ENCONTRADO.</summary>
+    /// <summary>
+    /// O detalhe do jogo. Se não existir, JOGO_NAO_ENCONTRADO; jogo inativo também dá
+    /// JOGO_NAO_ENCONTRADO para quem não é administrador (RN04).
+    /// </summary>
     Task<JogoDetalheServiceModel> BuscarPorIdAsync(int id);
 
     /// <summary>Grava o jogo (ativo) e os seus gêneros numa transação e o devolve com o id gerado.</summary>

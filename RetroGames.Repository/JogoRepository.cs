@@ -1,4 +1,5 @@
 using MySqlConnector;
+using RetroGames.Model.Filtros;
 using RetroGames.Model.Model;
 
 namespace RetroGames.Repository;
@@ -10,10 +11,10 @@ public class JogoRepository(RepositoryConfig config) : RepositoryBase(config), I
         "co_seq_jogo, no_jogo, ds_jogo, nu_ano_lancamento, vl_preco, qt_estoque, " +
         "st_ativo, dt_cadastro, co_plataforma, co_condicao_jogo";
 
-    public async Task<(List<Jogo> Itens, int Total)> ListarAsync(
-        string? busca, int? idPlataforma, List<int>? ids, bool incluirInativos,
-        int pagina, int tamanhoPagina)
+    public async Task<(List<Jogo> Itens, int Total)> ListarAsync(FiltroJogo filtro)
     {
+        var ids = filtro.Ids;
+
         // Filtro por lista vazia não encontra nenhum jogo; "IN ()" seria SQL inválido.
         if (ids is { Count: 0 })
         {
@@ -21,28 +22,28 @@ public class JogoRepository(RepositoryConfig config) : RepositoryBase(config), I
         }
 
         // Mesmo filtro para a página e para a contagem. Cada filtro só vale quando informado.
-        var filtro =
+        var clausulaWhere =
             "WHERE (@busca IS NULL OR no_jogo LIKE CONCAT('%', @busca, '%')) " +
             "AND (@idPlataforma IS NULL OR co_plataforma = @idPlataforma) " +
             "AND (@incluirInativos = TRUE OR st_ativo = TRUE)";
         if (ids != null)
         {
             // Só os nomes dos parâmetros (@id0, @id1...) entram no texto; os valores vão como parâmetro.
-            filtro += " AND co_seq_jogo IN (" + NomesDeParametros("@id", ids.Count) + ")";
+            clausulaWhere += " AND co_seq_jogo IN (" + NomesDeParametros("@id", ids.Count) + ")";
         }
 
         await using var conexao = await CriarConexaoAsync();
 
-        await using var comandoTotal = CriarComando(conexao, "SELECT COUNT(*) FROM tb_jogo " + filtro);
+        await using var comandoTotal = CriarComando(conexao, "SELECT COUNT(*) FROM tb_jogo " + clausulaWhere);
         AdicionarParametrosDoFiltro(comandoTotal);
         var total = Convert.ToInt32(await comandoTotal.ExecuteScalarAsync());
 
         await using var comando = CriarComando(conexao,
-            "SELECT " + Colunas + " FROM tb_jogo " + filtro +
+            "SELECT " + Colunas + " FROM tb_jogo " + clausulaWhere +
             " ORDER BY no_jogo, co_seq_jogo LIMIT @tamanhoPagina OFFSET @deslocamento");
         AdicionarParametrosDoFiltro(comando);
-        AdicionarParametro(comando, "@tamanhoPagina", tamanhoPagina);
-        AdicionarParametro(comando, "@deslocamento", (pagina - 1) * tamanhoPagina);
+        AdicionarParametro(comando, "@tamanhoPagina", filtro.TamanhoPagina);
+        AdicionarParametro(comando, "@deslocamento", (filtro.Pagina - 1) * filtro.TamanhoPagina);
         await using var leitor = await comando.ExecuteReaderAsync();
 
         var jogos = new List<Jogo>();
@@ -54,9 +55,9 @@ public class JogoRepository(RepositoryConfig config) : RepositoryBase(config), I
 
         void AdicionarParametrosDoFiltro(MySqlCommand cmd)
         {
-            AdicionarParametro(cmd, "@busca", busca);
-            AdicionarParametro(cmd, "@idPlataforma", idPlataforma);
-            AdicionarParametro(cmd, "@incluirInativos", incluirInativos);
+            AdicionarParametro(cmd, "@busca", filtro.Busca);
+            AdicionarParametro(cmd, "@idPlataforma", filtro.IdPlataforma);
+            AdicionarParametro(cmd, "@incluirInativos", filtro.IncluirInativos);
             for (var i = 0; i < (ids?.Count ?? 0); i++)
             {
                 AdicionarParametro(cmd, "@id" + i, ids![i]);

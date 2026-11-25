@@ -1,4 +1,5 @@
 using System.Transactions;
+using RetroGames.Model.Filtros;
 using RetroGames.Model.Model;
 using RetroGames.Repository;
 
@@ -6,28 +7,29 @@ namespace RetroGames.Services;
 
 /// <summary>
 /// Catálogo e regras de negócio de jogos. Cada Repository lê uma tabela; aqui os
-/// dados são combinados com LINQ no JogoDetalheServiceModel. Não conhece SQL nem HTTP.
+/// dados são combinados com LINQ no JogoDetalheServiceModel. Não conhece SQL nem HTTP:
+/// quem chama chega pelo IUsuarioAtualService.
 /// </summary>
-public class JogoService(IRepositorySet repositorio) : IJogoService
+public class JogoService(IRepositorySet repositorio, IUsuarioAtualService usuarioAtual) : IJogoService
 {
-    public async Task<(List<JogoDetalheServiceModel> Itens, int Total)> ListarAsync(
-        string? busca, int? idPlataforma, int? idGenero, int pagina, int tamanhoPagina)
+    public async Task<(List<JogoDetalheServiceModel> Itens, int Total)> ListarAsync(FiltroJogo filtro)
     {
+        // RN04: inativos só para o administrador. Para os demais, o pedido é ignorado.
+        filtro.IncluirInativos = filtro.IncluirInativos && usuarioAtual.EhAdministrador;
+
         // Filtro por gênero depende de outra tabela: os ids dos jogos do gênero são
         // selecionados com LINQ e vão para o SQL, que mantém contagem e paginação.
-        List<int>? ids = null;
-        if (idGenero != null)
+        filtro.Ids = null;
+        if (filtro.IdGenero != null)
         {
             var vinculos = await repositorio.JogoGenero.ListarAsync();
-            ids = vinculos
-                .Where(vinculo => vinculo.IdGenero == idGenero)
+            filtro.Ids = vinculos
+                .Where(vinculo => vinculo.IdGenero == filtro.IdGenero)
                 .Select(vinculo => vinculo.IdJogo)
                 .ToList();
         }
 
-        // Só jogos ativos. Mostrar inativos ao administrador (RN04) entra na aula 6.
-        var (jogos, total) = await repositorio.Jogo.ListarAsync(
-            busca, idPlataforma, ids, false, pagina, tamanhoPagina);
+        var (jogos, total) = await repositorio.Jogo.ListarAsync(filtro);
 
         return (await MontarDetalhesAsync(jogos), total);
     }
@@ -35,7 +37,8 @@ public class JogoService(IRepositorySet repositorio) : IJogoService
     public async Task<JogoDetalheServiceModel> BuscarPorIdAsync(int id)
     {
         var jogo = await repositorio.Jogo.BuscarPorIdAsync(id);
-        if (jogo == null)
+        // RN04: para quem não é administrador, jogo inativo é como jogo que não existe.
+        if (jogo == null || (!jogo.Ativo && !usuarioAtual.EhAdministrador))
         {
             throw new BusinessRuleException(BusinessErrors.JOGO_NAO_ENCONTRADO);
         }

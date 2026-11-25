@@ -20,4 +20,7 @@ public class ListarJogoRequestApiModel
 
     /// <summary>Quantidade de jogos por página.</summary>
     public int TamanhoPagina { get; set; } = 12;
+
+    /// <summary>Incluir também os jogos inativos. Só vale para o administrador (RN04).</summary>
+    public bool IncluirInativos { get; set; }
 }

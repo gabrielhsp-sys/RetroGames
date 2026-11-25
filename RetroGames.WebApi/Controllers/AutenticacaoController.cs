@@ -19,6 +19,7 @@ public class AutenticacaoController(IAutenticacaoService autenticacaoService) : 
 {
     /// <summary>POST /api/Autenticacao/login: 200 com o usuário e o cookie de sessão, ou 401 com código 6.</summary>
     [HttpPost("login")]
+    [AllowAnonymous]
     public async Task<ActionResult<RetroGamesResponseApiModel<UsuarioLogadoResponseApiModel>>> Login(
         LoginRequestApiModel request)
     {
@@ -35,8 +36,7 @@ public class AutenticacaoController(IAutenticacaoService autenticacaoService) : 
     }
 
     /// <summary>POST /api/Autenticacao/logout: apaga o cookie de sessão.</summary>
-    [HttpPost("logout")]
-    [Authorize]
+    [HttpPost("logout")] // exige login pela política padrão
     public async Task<ActionResult<RetroGamesResponseApiModel>> Logout()
     {
         await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
@@ -44,8 +44,7 @@ public class AutenticacaoController(IAutenticacaoService autenticacaoService) : 
     }
 
     /// <summary>GET /api/Autenticacao/eu: o usuário da sessão, lido do cookie.</summary>
-    [HttpGet("eu")]
-    [Authorize]
+    [HttpGet("eu")] // exige login pela política padrão
     public ActionResult<RetroGamesResponseApiModel<UsuarioLogadoResponseApiModel>> Eu()
     {
         return Ok(new RetroGamesResponseApiModel<UsuarioLogadoResponseApiModel>(User.ParaUsuarioLogadoResponse()));

@@ -1,31 +1,34 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using RetroGames.Services;
 using RetroGames.WebApi.ApiModels;
+using RetroGames.WebApi.Configuration;
 using RetroGames.WebApi.Mappers;
 
 namespace RetroGames.WebApi.Controllers;
 
 /// <summary>
-/// Catálogo de jogos: listagem paginada com filtros e detalhe. Recebe, chama o
+/// Catálogo de jogos (público) e gravação (só administrador). Recebe, chama o
 /// Service, converte e responde: sem SQL, sem regra e sem try/catch.
 /// </summary>
 [ApiController]
 [Route("api/[controller]")]
 public class JogoController(IJogoService jogoService) : ControllerBase
 {
-    /// <summary>GET /api/Jogo?busca=&amp;idPlataforma=&amp;idGenero=&amp;pagina=&amp;tamanhoPagina=</summary>
+    /// <summary>GET /api/Jogo?busca=&amp;idPlataforma=&amp;idGenero=&amp;pagina=&amp;tamanhoPagina=&amp;incluirInativos=</summary>
     [HttpGet]
+    [AllowAnonymous]
     public async Task<ActionResult<RetroGamesResponseApiModel<PaginaResponseApiModel<ListarJogoResponseApiModel>>>> Listar(
         [FromQuery] ListarJogoRequestApiModel request)
     {
-        var (itens, totalItens) = await jogoService.ListarAsync(
-            request.Busca, request.IdPlataforma, request.IdGenero, request.Pagina, request.TamanhoPagina);
+        var (itens, totalItens) = await jogoService.ListarAsync(request.ParaFiltro());
         return Ok(new RetroGamesResponseApiModel<PaginaResponseApiModel<ListarJogoResponseApiModel>>(
             itens.ParaPaginaResponse(totalItens, request)));
     }
 
     /// <summary>GET /api/Jogo/{id}: o detalhe de um jogo.</summary>
     [HttpGet("{id:int}")]
+    [AllowAnonymous]
     public async Task<ActionResult<RetroGamesResponseApiModel<ListarPorIdJogoResponseApiModel>>> ListarPorId(int id)
     {
         var detalhe = await jogoService.BuscarPorIdAsync(id);
@@ -34,6 +37,7 @@ public class JogoController(IJogoService jogoService) : ControllerBase
 
     /// <summary>POST /api/Jogo: grava o jogo e os gêneros (numa transação, no Service). 201 com o detalhe e o Location.</summary>
     [HttpPost]
+    [Authorize(Policy = Politicas.Administrador)]
     public async Task<ActionResult<RetroGamesResponseApiModel<ListarPorIdJogoResponseApiModel>>> Inserir(
         InserirJogoRequestApiModel request)
     {
@@ -45,6 +49,7 @@ public class JogoController(IJogoService jogoService) : ControllerBase
 
     /// <summary>PUT /api/Jogo/{id}: altera o jogo do id da rota e troca a lista de gêneros.</summary>
     [HttpPut("{id:int}")]
+    [Authorize(Policy = Politicas.Administrador)]
     public async Task<ActionResult<RetroGamesResponseApiModel>> Alterar(int id, AlterarJogoRequestApiModel request)
     {
         await jogoService.AlterarAsync(request.ParaModel(id), request.IdsGeneros);
@@ -53,6 +58,7 @@ public class JogoController(IJogoService jogoService) : ControllerBase
 
     /// <summary>DELETE /api/Jogo/{id}: só desativa o jogo, nunca o apaga (RN03). Responde 200 com o envelope.</summary>
     [HttpDelete("{id:int}")]
+    [Authorize(Policy = Politicas.Administrador)]
     public async Task<ActionResult<RetroGamesResponseApiModel>> Excluir(int id)
     {
         await jogoService.DesativarAsync(id);

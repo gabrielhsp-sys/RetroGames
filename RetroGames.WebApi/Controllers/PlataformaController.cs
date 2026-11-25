@@ -1,12 +1,14 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using RetroGames.Services;
 using RetroGames.WebApi.ApiModels;
+using RetroGames.WebApi.Configuration;
 using RetroGames.WebApi.Mappers;
 
 namespace RetroGames.WebApi.Controllers;
 
 /// <summary>
-/// Consultas de plataformas. Recebe, chama o Service, converte e responde:
+/// Consultas (públicas) e gravação (só administrador) de plataformas. Recebe, chama o Service, converte e responde:
 /// sem SQL, sem regra e sem try/catch (erros vão para o GlobalExceptionHandler).
 /// </summary>
 [ApiController]
@@ -15,6 +17,7 @@ public class PlataformaController(IPlataformaService plataformaService) : Contro
 {
     /// <summary>GET /api/Plataforma: todas as plataformas.</summary>
     [HttpGet]
+    [AllowAnonymous]
     public async Task<ActionResult<RetroGamesResponseApiModel<List<ListarPlataformaResponseApiModel>>>> Listar()
     {
         var plataformas = await plataformaService.ListarAsync();
@@ -24,6 +27,7 @@ public class PlataformaController(IPlataformaService plataformaService) : Contro
 
     /// <summary>GET /api/Plataforma/{id}: uma plataforma.</summary>
     [HttpGet("{id:int}")]
+    [AllowAnonymous]
     public async Task<ActionResult<RetroGamesResponseApiModel<ListarPlataformaResponseApiModel>>> ListarPorId(int id)
     {
         var plataforma = await plataformaService.BuscarPorIdAsync(id);
@@ -32,6 +36,7 @@ public class PlataformaController(IPlataformaService plataformaService) : Contro
 
     /// <summary>POST /api/Plataforma: 201, a plataforma criada em data e o Location /api/Plataforma/{id}.</summary>
     [HttpPost]
+    [Authorize(Policy = Politicas.Administrador)]
     public async Task<ActionResult<RetroGamesResponseApiModel<ListarPlataformaResponseApiModel>>> Inserir(
         InserirPlataformaRequestApiModel request)
     {
@@ -42,6 +47,7 @@ public class PlataformaController(IPlataformaService plataformaService) : Contro
 
     /// <summary>PUT /api/Plataforma/{id}: altera a plataforma do id da rota.</summary>
     [HttpPut("{id:int}")]
+    [Authorize(Policy = Politicas.Administrador)]
     public async Task<ActionResult<RetroGamesResponseApiModel>> Alterar(int id, AlterarPlataformaRequestApiModel request)
     {
         await plataformaService.AlterarAsync(request.ParaModel(id));
@@ -50,6 +56,7 @@ public class PlataformaController(IPlataformaService plataformaService) : Contro
 
     /// <summary>DELETE /api/Plataforma/{id}: apaga a plataforma sem jogos. Responde 200 com o envelope (nunca 204).</summary>
     [HttpDelete("{id:int}")]
+    [Authorize(Policy = Politicas.Administrador)]
     public async Task<ActionResult<RetroGamesResponseApiModel>> Excluir(int id)
     {
         await plataformaService.ExcluirAsync(id);

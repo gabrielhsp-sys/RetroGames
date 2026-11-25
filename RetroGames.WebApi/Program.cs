@@ -7,6 +7,7 @@ using RetroGames.WebApi.ActionFilters;
 using RetroGames.WebApi.ApiModels;
 using RetroGames.WebApi.Configuration;
 using RetroGames.WebApi.Middlewares;
+using RetroGames.WebApi.Services;
 
 // Lê o arquivo .env (procurando nas pastas acima até a raiz do repositório) e põe
 // cada linha nas variáveis de ambiente. ConnectionStrings__Default vira
@@ -28,6 +29,9 @@ if (string.IsNullOrWhiteSpace(connectionString))
 // 1. Serviços (injeção de dependência)
 builder.Services.AddRepositorios(connectionString);
 builder.Services.AddServicosDeNegocio();
+// O Service pergunta quem chama (RN04) pelo IUsuarioAtualService; a WebApi responde com o usuário da requisição.
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddScoped<IUsuarioAtualService, UsuarioAtualService>();
 // Todos os validators deste projeto (IValidator<T>) e o filtro que os aplica antes de cada action.
 builder.Services.AddValidatorsFromAssemblyContaining<Program>();
 builder.Services.AddControllers(opcoes => opcoes.Filters.Add<FluentValidationFilter>())
@@ -47,7 +51,7 @@ builder.Services.AddControllers(opcoes => opcoes.Filters.Add<FluentValidationFil
         };
     });
 builder.Services.AddAutenticacaoPorCookie();
-builder.Services.AddAuthorization();
+builder.Services.AddAutorizacao();
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 builder.Services.AddProblemDetails();
 builder.Services.AddOpenApi();
@@ -77,7 +81,9 @@ app.UseExceptionHandler();
 if (app.Environment.IsDevelopment())
 {
     // Descrição da API em /openapi/v1.json e a página de testes em /swagger.
-    app.MapOpenApi();
+    // A descrição da API é pública: sem isso, a política padrão exige login e o /swagger
+    // mostra "Failed to load API definition".
+    app.MapOpenApi().AllowAnonymous();
     app.UseSwaggerUI(opcoes => opcoes.SwaggerEndpoint("/openapi/v1.json", "RetroGames API v1"));
 }
 

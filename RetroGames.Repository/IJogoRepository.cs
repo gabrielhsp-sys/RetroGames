@@ -1,3 +1,4 @@
+using RetroGames.Model.Filtros;
 using RetroGames.Model.Model;
 
 namespace RetroGames.Repository;
@@ -7,12 +8,10 @@ public interface IJogoRepository
 {
     /// <summary>
     /// Os jogos de uma página e o total encontrado com o mesmo filtro.
-    /// Cada filtro só vale quando informado: parte do nome (busca), plataforma e lista de ids.
-    /// Inativos só entram quando incluirInativos for verdadeiro.
+    /// Cada filtro só vale quando informado: parte do nome (Busca), plataforma e lista de Ids.
+    /// Inativos só entram quando IncluirInativos for verdadeiro. IdGenero não é usado aqui.
     /// </summary>
-    Task<(List<Jogo> Itens, int Total)> ListarAsync(
-        string? busca, int? idPlataforma, List<int>? ids, bool incluirInativos,
-        int pagina, int tamanhoPagina);
+    Task<(List<Jogo> Itens, int Total)> ListarAsync(FiltroJogo filtro);
 
     /// <summary>O jogo com o id informado, ou nulo se não existir.</summary>
     Task<Jogo?> BuscarPorIdAsync(int id);

@@ -1,3 +1,4 @@
+using RetroGames.Model.Filtros;
 using RetroGames.Model.Model;
 using RetroGames.Services;
 using RetroGames.WebApi.ApiModels;
@@ -53,6 +54,17 @@ public static class JogoMapper
         TotalPaginas = request.TamanhoPagina > 0
             ? (int)Math.Ceiling(totalItens / (double)request.TamanhoPagina)
             : 0,
+    };
+
+    /// <summary>Query string de GET /api/Jogo → filtro que o Service recebe.</summary>
+    public static FiltroJogo ParaFiltro(this ListarJogoRequestApiModel request) => new()
+    {
+        Busca = request.Busca,
+        IdPlataforma = request.IdPlataforma,
+        IdGenero = request.IdGenero,
+        IncluirInativos = request.IncluirInativos,
+        Pagina = request.Pagina,
+        TamanhoPagina = request.TamanhoPagina,
     };
 
     /// <summary>Corpo do POST → Jogo do modelo. Os gêneros vão ao Service à parte; o Service marca como ativo.</summary>
