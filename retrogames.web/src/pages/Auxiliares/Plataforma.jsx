@@ -103,6 +103,28 @@ export default function Plataforma() {
   const classeCampo = (campo) => `form-control ${errosCampos[campo] ? 'is-invalid' : ''}`
   const descricaoErro = (campo) => (errosCampos[campo] ? `erro-${campo}` : undefined)
 
+  // Editar e Excluir: na coluna Ações no computador; embaixo do nome no celular.
+  const acoes = (plataforma) => (
+    <>
+      <button
+        type="button"
+        className="btn btn-outline-primary btn-sm"
+        onClick={() => editar(plataforma)}
+        aria-label={`Editar ${plataforma.nome}`}
+      >
+        Editar
+      </button>
+      <button
+        type="button"
+        className="btn btn-outline-danger btn-sm"
+        onClick={() => excluir(plataforma)}
+        aria-label={`Excluir ${plataforma.nome}`}
+      >
+        Excluir
+      </button>
+    </>
+  )
+
   return (
     <section>
       <h1 className="titulo-pagina">Plataformas</h1>
@@ -200,34 +222,23 @@ export default function Plataforma() {
                 <thead>
                   <tr>
                     <th scope="col">Nome</th>
-                    <th scope="col">Fabricante</th>
+                    <th scope="col" className="d-none d-sm-table-cell">Fabricante</th>
                     <th scope="col">Ano</th>
-                    <th scope="col" className="text-end">Ações</th>
+                    <th scope="col" className="text-end d-none d-md-table-cell">Ações</th>
                   </tr>
                 </thead>
                 <tbody>
                   {plataformas.map((plataforma) => (
                     <tr key={plataforma.id} className={emEdicao?.id === plataforma.id ? 'linha-em-edicao' : ''}>
-                      <td className="fw-semibold">{plataforma.nome}</td>
-                      <td>{plataforma.fabricante}</td>
+                      <td>
+                        <span className="fw-semibold">{plataforma.nome}</span>
+                        <span className="d-block d-sm-none small">{plataforma.fabricante}</span>
+                        <div className="d-flex d-md-none flex-wrap gap-2 mt-2">{acoes(plataforma)}</div>
+                      </td>
+                      <td className="d-none d-sm-table-cell">{plataforma.fabricante}</td>
                       <td>{plataforma.anoLancamento}</td>
-                      <td className="text-end text-nowrap">
-                        <button
-                          type="button"
-                          className="btn btn-outline-primary btn-sm me-2"
-                          onClick={() => editar(plataforma)}
-                          aria-label={`Editar ${plataforma.nome}`}
-                        >
-                          Editar
-                        </button>
-                        <button
-                          type="button"
-                          className="btn btn-outline-danger btn-sm"
-                          onClick={() => excluir(plataforma)}
-                          aria-label={`Excluir ${plataforma.nome}`}
-                        >
-                          Excluir
-                        </button>
+                      <td className="text-end text-nowrap d-none d-md-table-cell">
+                        <div className="d-inline-flex gap-2">{acoes(plataforma)}</div>
                       </td>
                     </tr>
                   ))}

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
-import { Link, useLocation, useSearchParams } from 'react-router-dom'
+import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom'
 import { jogoApi } from '../../api/servicos'
 import { obterMensagemErro } from '../../api/erros'
 import { formatarPreco } from '../../lib/formato'
@@ -20,6 +20,12 @@ export default function Jogos() {
   const [erroAcao, setErroAcao] = useState('')
   // Aviso que o formulário deixa ao voltar para a lista ("Jogo incluído.").
   const [aviso, setAviso] = useState(local.state?.aviso ?? '')
+  const navigate = useNavigate()
+
+  // O aviso foi lido: apaga-o do histórico para não reaparecer no F5.
+  useEffect(() => {
+    if (local.state?.aviso) navigate(local.pathname + local.search, { replace: true, state: null })
+  }, [local, navigate])
 
   const carregarJogos = useCallback(() => {
     setCarregando(true)
@@ -61,6 +67,30 @@ export default function Jogos() {
       setErroAcao(obterMensagemErro(falha))
     }
   }
+
+  // Editar e Desativar: na coluna Ações no computador; embaixo do nome no celular,
+  // para não ficarem escondidos à direita da tabela.
+  const acoes = (jogo) => (
+    <>
+      <Link
+        to={`/admin/jogos/${jogo.id}/editar`}
+        className="btn btn-outline-primary btn-sm"
+        aria-label={`Editar ${jogo.nome}`}
+      >
+        Editar
+      </Link>
+      {jogo.ativo && (
+        <button
+          type="button"
+          className="btn btn-outline-danger btn-sm"
+          onClick={() => desativar(jogo)}
+          aria-label={`Desativar ${jogo.nome}`}
+        >
+          Desativar
+        </button>
+      )}
+    </>
+  )
 
   return (
     <section>
@@ -106,45 +136,33 @@ export default function Jogos() {
               <thead>
                 <tr>
                   <th scope="col">Nome</th>
-                  <th scope="col">Plataforma</th>
-                  <th scope="col">Condição</th>
+                  <th scope="col" className="d-none d-sm-table-cell">Plataforma</th>
+                  <th scope="col" className="d-none d-lg-table-cell">Condição</th>
                   <th scope="col" className="text-end">Preço</th>
-                  <th scope="col" className="text-end">Estoque</th>
+                  <th scope="col" className="text-end d-none d-sm-table-cell">Estoque</th>
                   <th scope="col">Situação</th>
-                  <th scope="col" className="text-end">Ações</th>
+                  <th scope="col" className="text-end d-none d-md-table-cell">Ações</th>
                 </tr>
               </thead>
               <tbody>
                 {resultado.itens.map((jogo) => (
                   <tr key={jogo.id}>
-                    <td className="fw-semibold">{jogo.nome}</td>
-                    <td>{jogo.nomePlataforma}</td>
-                    <td>{jogo.descricaoCondicao}</td>
+                    <td>
+                      <span className="fw-semibold">{jogo.nome}</span>
+                      <span className="d-block d-sm-none small">{jogo.nomePlataforma}</span>
+                      <div className="d-flex d-md-none flex-wrap gap-2 mt-2">{acoes(jogo)}</div>
+                    </td>
+                    <td className="d-none d-sm-table-cell">{jogo.nomePlataforma}</td>
+                    <td className="d-none d-lg-table-cell">{jogo.descricaoCondicao}</td>
                     <td className="text-end text-nowrap">{formatarPreco(jogo.preco)}</td>
-                    <td className="text-end">{jogo.estoque}</td>
+                    <td className="text-end d-none d-sm-table-cell">{jogo.estoque}</td>
                     <td>
                       <span className={`situacao ${jogo.ativo ? 'situacao-ativo' : 'situacao-inativo'}`}>
                         {jogo.ativo ? 'Ativo' : 'Inativo'}
                       </span>
                     </td>
-                    <td className="text-end text-nowrap">
-                      <Link
-                        to={`/admin/jogos/${jogo.id}/editar`}
-                        className="btn btn-outline-primary btn-sm me-2"
-                        aria-label={`Editar ${jogo.nome}`}
-                      >
-                        Editar
-                      </Link>
-                      {jogo.ativo && (
-                        <button
-                          type="button"
-                          className="btn btn-outline-danger btn-sm"
-                          onClick={() => desativar(jogo)}
-                          aria-label={`Desativar ${jogo.nome}`}
-                        >
-                          Desativar
-                        </button>
-                      )}
+                    <td className="text-end text-nowrap d-none d-md-table-cell">
+                      <div className="d-inline-flex gap-2">{acoes(jogo)}</div>
                     </td>
                   </tr>
                 ))}
