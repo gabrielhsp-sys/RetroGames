@@ -92,6 +92,13 @@ export default function FormularioJogo() {
     setSalvando(true)
     setErrosCampos({})
     setErroFormulario('')
+    // Number('') vale 0, e estoque 0 é válido: sem esta checagem, o campo em
+    // branco seria gravado como zero sem aviso nenhum.
+    if (String(formulario.estoque).trim() === '') {
+      setErrosCampos({ estoque: 'Informe o estoque (0 se não houver unidades).' })
+      setSalvando(false)
+      return
+    }
     // Os campos devolvem texto: os números são convertidos com Number() antes de enviar.
     const dados = {
       nome: formulario.nome.trim(),
