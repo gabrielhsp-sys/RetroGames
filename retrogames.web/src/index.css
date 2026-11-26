@@ -1,1 +1,557 @@
-/* Ajustes visuais complementares ao Bootstrap (Espec. 8.1). */
+/* =====================================================================
+   RetroGames: "Prateleira de cartuchos"
+   Ajustes visuais complementares ao Bootstrap (Espec. 8.1).
+   O Bootstrap é a base; a identidade vem das variáveis abaixo.
+   ===================================================================== */
+
+:root {
+  /* Paleta da direção A (PLANO-FRONT.md). Contraste calculado (WCAG):
+     tinta/plástico 9,92 · tinta/rótulo 15,16 · rótulo/roxo 9,57
+     roxo/plástico 6,26 · tinta/etiqueta 5,41 · tinta-suave/plástico 6,61 */
+  --plastico: #c8c7cc;   /* fundo da página e corpo do cartucho */
+  --tinta: #1f1d24;      /* texto */
+  --tinta-suave: #3d3a45;/* texto secundário */
+  --roxo: #4a2c86;       /* só ações: botão, link, foco */
+  --roxo-escuro: #3b2369;
+  --rotulo: #f6f4ee;     /* área de texto do cartucho e painéis */
+  --etiqueta: #f2691b;   /* só preço, sempre com tinta escura */
+  --ranhura: #8d8c94;    /* sulcos e bordas, nunca informação */
+  --erro: #8a1c24;
+  --sucesso: #1f5c32;
+
+  /* Tipografia: Archivo (Google Fonts, carregada no index.html). */
+  --fonte-titulo: "Archivo", "Arial Narrow", system-ui, sans-serif;
+  --fonte-texto: "Archivo", system-ui, -apple-system, "Segoe UI", sans-serif;
+
+  --raio: 6px;
+  --sombra-cartucho: drop-shadow(0 3px 0 rgb(31 29 36 / 0.35)) drop-shadow(0 10px 14px rgb(31 29 36 / 0.18));
+
+  /* Bootstrap lendo a paleta. */
+  --bs-body-bg: var(--plastico);
+  --bs-body-color: var(--tinta);
+  --bs-body-font-family: var(--fonte-texto);
+  --bs-secondary-color: var(--tinta-suave);
+  --bs-link-color: var(--roxo);
+  --bs-link-color-rgb: 74, 44, 134;
+  --bs-link-hover-color: var(--roxo-escuro);
+  --bs-link-hover-color-rgb: 59, 35, 105;
+  --bs-border-color: var(--ranhura);
+  --bs-border-radius: var(--raio);
+  --bs-focus-ring-color: rgb(74 44 134 / 0.45);
+  --bs-primary: var(--roxo);
+  --bs-primary-rgb: 74, 44, 134;
+  --bs-danger: var(--erro);
+  --bs-danger-rgb: 138, 28, 36;
+}
+
+body {
+  font-family: var(--fonte-texto);
+  -webkit-tap-highlight-color: transparent;
+}
+
+h1, h2, h3, .titulo {
+  font-family: var(--fonte-titulo);
+  font-weight: 800;
+  font-stretch: 112%;
+  letter-spacing: -0.01em;
+  line-height: 1.1;
+}
+
+/* Foco visível em tudo o que recebe teclado. */
+:focus-visible {
+  outline: 3px solid var(--roxo);
+  outline-offset: 2px;
+}
+
+.btn:focus-visible,
+.page-link:focus-visible,
+.form-control:focus,
+.form-select:focus,
+.form-check-input:focus {
+  outline: 3px solid var(--roxo);
+  outline-offset: 2px;
+  box-shadow: none;
+  border-color: var(--roxo);
+}
+
+/* Área de toque confortável. */
+.btn,
+.page-link,
+.nav-link,
+.form-control,
+.form-select {
+  min-height: 44px;
+}
+
+/* ---------- Botões ---------- */
+.btn {
+  font-weight: 700;
+  border-width: 2px;
+}
+
+.btn-primary {
+  --bs-btn-bg: var(--roxo);
+  --bs-btn-border-color: var(--roxo);
+  --bs-btn-color: var(--rotulo);
+  --bs-btn-hover-bg: var(--roxo-escuro);
+  --bs-btn-hover-border-color: var(--roxo-escuro);
+  --bs-btn-hover-color: var(--rotulo);
+  --bs-btn-active-bg: var(--roxo-escuro);
+  --bs-btn-active-border-color: var(--roxo-escuro);
+  --bs-btn-active-color: var(--rotulo);
+  --bs-btn-disabled-bg: var(--roxo);
+  --bs-btn-disabled-border-color: var(--roxo);
+  --bs-btn-disabled-color: var(--rotulo);
+}
+
+.btn-outline-primary {
+  --bs-btn-color: var(--roxo);
+  --bs-btn-border-color: var(--roxo);
+  --bs-btn-hover-bg: var(--roxo);
+  --bs-btn-hover-border-color: var(--roxo);
+  --bs-btn-hover-color: var(--rotulo);
+  --bs-btn-active-bg: var(--roxo-escuro);
+  --bs-btn-active-border-color: var(--roxo-escuro);
+  --bs-btn-active-color: var(--rotulo);
+}
+
+.btn-outline-danger {
+  --bs-btn-color: var(--erro);
+  --bs-btn-border-color: var(--erro);
+  --bs-btn-hover-bg: var(--erro);
+  --bs-btn-hover-border-color: var(--erro);
+  --bs-btn-hover-color: var(--rotulo);
+  --bs-btn-active-bg: var(--erro);
+  --bs-btn-active-border-color: var(--erro);
+  --bs-btn-active-color: var(--rotulo);
+}
+
+/* ---------- Formulários ---------- */
+.form-label {
+  font-weight: 700;
+  margin-bottom: 0.25rem;
+}
+
+.form-control,
+.form-select {
+  background-color: var(--rotulo);
+  border: 2px solid var(--ranhura);
+  color: var(--tinta);
+}
+
+/* ---------- Barra de navegação: o "console" ---------- */
+.barra {
+  background: var(--tinta);
+  border-bottom: 4px solid var(--roxo);
+}
+
+.barra .navbar-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  color: var(--rotulo);
+  min-height: 44px;
+}
+
+.marca-texto {
+  font-family: var(--fonte-titulo);
+  font-weight: 800;
+  font-stretch: 125%;
+  font-size: 1.3rem;
+  letter-spacing: -0.02em;
+}
+
+.barra .nav-link {
+  color: var(--rotulo);
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  border-bottom: 3px solid transparent;
+}
+
+.barra .nav-link:hover {
+  color: var(--rotulo);
+  border-bottom-color: var(--ranhura);
+}
+
+.barra .nav-link.active {
+  color: var(--rotulo);
+  border-bottom-color: var(--rotulo);
+}
+
+.barra :focus-visible {
+  outline-color: var(--rotulo);
+}
+
+.barra .navbar-toggler {
+  border: 2px solid var(--rotulo);
+  min-width: 44px;
+  min-height: 44px;
+}
+
+.barra .navbar-toggler:focus {
+  box-shadow: none;
+}
+
+/* ---------- Rodapé ---------- */
+.rodape {
+  background: var(--tinta);
+  color: var(--plastico);
+}
+
+/* ---------- Cabeçalho de página ---------- */
+.titulo-pagina {
+  font-size: clamp(1.75rem, 4vw, 2.5rem);
+  font-stretch: 125%;
+  margin-bottom: 0.25rem;
+}
+
+.subtitulo-pagina {
+  color: var(--tinta-suave);
+  margin-bottom: 1.5rem;
+}
+
+/* Painel claro, como o rótulo do cartucho. */
+.painel {
+  background: var(--rotulo);
+  border: 2px solid var(--ranhura);
+  border-radius: var(--raio);
+  padding: 1rem;
+}
+
+/* =====================================================================
+   Cartucho: a imagem do produto, desenhada em CSS.
+   Regra da direção A: o clip-path fica num elemento só de pintura
+   (.cartucho-casca); link, etiqueta e foco ficam fora do corte.
+   ===================================================================== */
+.prateleira {
+  --bs-gutter-x: 1.5rem; /* = padding do .container: sem rolagem horizontal */
+  --bs-gutter-y: 2.75rem;
+}
+
+/* Cada coluna tem a sua tábua; lado a lado, formam a prateleira. */
+.prateleira > .col {
+  position: relative;
+  padding-bottom: 1.25rem;
+}
+
+.prateleira > .col::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 10px;
+  background: var(--tinta);
+  border-top: 3px solid var(--ranhura);
+  border-radius: 2px;
+}
+
+.jogo {
+  position: relative; /* âncora do stretched-link: o cartucho inteiro é clicável */
+  max-width: 300px;
+  margin-inline: auto;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.cartucho {
+  position: relative;
+  aspect-ratio: 5 / 4.4;
+  filter: var(--sombra-cartucho);
+  transition: transform 200ms ease-out;
+}
+
+.cartucho-casca {
+  position: absolute;
+  inset: 0;
+  background:
+    repeating-linear-gradient(90deg, var(--ranhura) 0 3px, transparent 3px 9px) top 6% center / 70% 9% no-repeat,
+    linear-gradient(180deg, #d6d5da 0%, var(--plastico) 40%, #b9b8be 100%);
+  clip-path: polygon(0 6%, 6% 0, 94% 0, 100% 6%, 100% 100%, 0 100%);
+  border-radius: 4px;
+}
+
+.cartucho-rotulo {
+  position: absolute;
+  top: 22%;
+  left: 9%;
+  right: 9%;
+  bottom: 14%;
+  background: var(--rotulo);
+  border-radius: 3px;
+  box-shadow: inset 0 0 0 2px rgb(31 29 36 / 0.12);
+  padding: 0.7rem 0.8rem;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.cartucho-plataforma {
+  font-size: 0.8rem;
+  font-weight: 700;
+  font-stretch: 87%;
+  color: var(--tinta-suave);
+  margin: 0 0 0.25rem;
+}
+
+.cartucho-nome {
+  font-family: var(--fonte-titulo);
+  font-size: 1.2rem;
+  font-weight: 800;
+  font-stretch: 75%;
+  line-height: 1.05;
+  margin: 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.cartucho-nome a {
+  color: var(--tinta);
+  text-decoration: none;
+}
+
+.cartucho-nome a:focus-visible {
+  outline: none; /* o anel aparece no cartucho inteiro, logo abaixo */
+}
+
+.jogo:has(.stretched-link:focus-visible) .cartucho {
+  outline: 3px solid var(--roxo);
+  outline-offset: 6px;
+  border-radius: 6px;
+}
+
+.cartucho-meta {
+  margin: auto 0 0;
+  font-size: 0.85rem;
+  color: var(--tinta-suave);
+}
+
+/* Etiqueta de preço colada no cartucho: laranja, sempre com tinta escura. */
+.etiqueta {
+  position: absolute;
+  right: -6px;
+  bottom: -2px; /* pendurada na borda de baixo: não cobre o texto do rótulo */
+  margin: 0;
+  background: var(--etiqueta);
+  color: var(--tinta);
+  font-weight: 800;
+  font-size: 1.05rem;
+  padding: 0.3rem 0.65rem 0.3rem 1.1rem;
+  border-radius: 3px;
+  transform: rotate(-4deg);
+  box-shadow: 0 2px 0 rgb(31 29 36 / 0.3);
+  transition: transform 200ms ease-out;
+  white-space: nowrap;
+}
+
+/* O furo da etiqueta. */
+.etiqueta::before {
+  content: "";
+  position: absolute;
+  left: 0.4rem;
+  top: 50%;
+  width: 6px;
+  height: 6px;
+  margin-top: -3px;
+  border-radius: 50%;
+  background: var(--tinta);
+  opacity: 0.55;
+}
+
+.etiqueta-grande {
+  position: static;
+  display: inline-block;
+  font-size: 1.75rem;
+  padding: 0.35rem 1rem 0.35rem 1.6rem;
+}
+
+.etiqueta-grande::before {
+  left: 0.6rem;
+  width: 8px;
+  height: 8px;
+  margin-top: -4px;
+}
+
+/* Carimbo de esgotado: caixa alta só aqui, como no objeto real. */
+.carimbo {
+  position: absolute;
+  top: 9%;
+  right: 4%;
+  margin: 0;
+  padding: 0.1rem 0.45rem;
+  border: 2px solid var(--erro);
+  color: var(--erro);
+  background: var(--rotulo);
+  font-weight: 800;
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  transform: rotate(3deg);
+}
+
+.jogo-generos {
+  margin: 0.9rem 0 0;
+  font-size: 0.9rem;
+  color: var(--tinta-suave);
+  text-align: center;
+}
+
+/* Um único gesto: com ponteiro, o cartucho sobe e a etiqueta balança. */
+@media (hover: hover) {
+  .jogo:hover .cartucho {
+    transform: translateY(-6px);
+  }
+
+  .jogo:hover .etiqueta {
+    transform: rotate(-6deg);
+  }
+}
+
+/* Cartucho grande do detalhe. */
+.cartucho-grande {
+  max-width: min(380px, 75vw);
+  margin-inline: auto;
+}
+
+.cartucho-grande .cartucho-nome {
+  font-size: 1.8rem;
+  -webkit-line-clamp: 4;
+}
+
+/* Cartucho vazio: adorno de estados e telas sem jogo. */
+.cartucho-vazio .cartucho-rotulo {
+  background: repeating-linear-gradient(135deg, var(--rotulo) 0 10px, #ebe8e0 10px 20px);
+}
+
+/* ---------- Detalhe ---------- */
+.ficha dt {
+  font-weight: 700;
+}
+
+.descricao {
+  max-width: 65ch;
+}
+
+/* ---------- Estados: carregando, erro e vazio ---------- */
+.estado {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem 1.25rem;
+  background: var(--rotulo);
+  border: 2px solid var(--ranhura);
+  border-radius: var(--raio);
+  margin-bottom: 1.5rem;
+}
+
+.estado-erro {
+  border-color: var(--erro);
+  border-left-width: 8px;
+}
+
+.estado-icone {
+  flex: 0 0 auto;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-weight: 800;
+  font-size: 1.25rem;
+  background: var(--erro);
+  color: var(--rotulo);
+}
+
+/* Carregando: os sulcos do cartucho piscando em sequência. */
+.carregando-sulcos {
+  display: flex;
+  gap: 4px;
+}
+
+.carregando-sulcos span {
+  width: 6px;
+  height: 22px;
+  border-radius: 2px;
+  background: var(--roxo);
+  animation: sulco 900ms ease-in-out infinite;
+}
+
+.carregando-sulcos span:nth-child(2) { animation-delay: 150ms; }
+.carregando-sulcos span:nth-child(3) { animation-delay: 300ms; }
+.carregando-sulcos span:nth-child(4) { animation-delay: 450ms; }
+
+@keyframes sulco {
+  0%, 100% { opacity: 0.25; }
+  50% { opacity: 1; }
+}
+
+.estado-vazio {
+  text-align: center;
+  padding: 2rem 1rem 1rem;
+}
+
+.estado-vazio .cartucho {
+  width: 150px;
+  margin: 0 auto 1.25rem;
+}
+
+/* ---------- Paginação ---------- */
+.pagination {
+  --bs-pagination-color: var(--roxo);
+  --bs-pagination-bg: var(--rotulo);
+  --bs-pagination-border-color: var(--ranhura);
+  --bs-pagination-border-width: 2px;
+  --bs-pagination-hover-color: var(--rotulo);
+  --bs-pagination-hover-bg: var(--roxo);
+  --bs-pagination-hover-border-color: var(--roxo);
+  --bs-pagination-focus-color: var(--roxo);
+  --bs-pagination-focus-bg: var(--rotulo);
+  --bs-pagination-focus-box-shadow: none;
+  --bs-pagination-active-color: var(--rotulo);
+  --bs-pagination-active-bg: var(--roxo);
+  --bs-pagination-active-border-color: var(--roxo);
+  --bs-pagination-disabled-color: var(--tinta-suave);
+  --bs-pagination-disabled-bg: var(--plastico);
+  --bs-pagination-disabled-border-color: var(--ranhura);
+  gap: 0.25rem;
+}
+
+.page-link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 44px;
+  font-weight: 700;
+}
+
+/* ---------- Página não encontrada ---------- */
+.nao-encontrada .cartucho {
+  width: 180px;
+  margin: 0 auto 1.5rem;
+}
+
+/* Sem movimento para quem pediu menos movimento. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+
+  .jogo:hover .cartucho {
+    transform: none;
+  }
+
+  .jogo:hover .etiqueta {
+    transform: rotate(-4deg);
+  }
+}
+
+.link-voltar {
+  min-height: 44px;
+}

@@ -67,6 +67,8 @@ export default function Catalogo() {
     setParametros(novos)
   }
 
+  const temFiltro = Boolean(busca || idPlataforma || idGenero)
+
   function enviarBusca(evento) {
     evento.preventDefault()
     // O texto digitado só vira filtro ao enviar a busca (Enter ou botão).
@@ -76,9 +78,10 @@ export default function Catalogo() {
 
   return (
     <section>
-      <h1 className="h3 mb-3">Catálogo</h1>
+      <h1 className="titulo-pagina">Catálogo</h1>
+      <p className="subtitulo-pagina">Cartuchos e jogos retrô usados, conferidos e com preço na etiqueta.</p>
 
-      <form className="row g-2 align-items-end mb-4" onSubmit={enviarBusca} role="search">
+      <form className="painel row g-2 align-items-end mx-0 mb-4" onSubmit={enviarBusca} role="search">
         <div className="col-12 col-md-6">
           <label htmlFor="busca" className="form-label">Buscar</label>
           <div className="input-group">
@@ -117,6 +120,13 @@ export default function Catalogo() {
             {generos.map((g) => <option key={g.id} value={g.id}>{g.nome}</option>)}
           </select>
         </div>
+        {temFiltro && (
+          <div className="col-12">
+            <button type="button" className="btn btn-link px-0" onClick={() => setParametros({})}>
+              Limpar busca e filtros
+            </button>
+          </div>
+        )}
       </form>
 
       {carregando && <Carregando texto="Carregando jogos..." />}
@@ -131,13 +141,22 @@ export default function Catalogo() {
 
       {!carregando && !erro && resultado?.itens.length === 0 && (
         <EstadoVazio titulo="Nenhum jogo encontrado.">
-          <p>Tente outro nome ou limpe os filtros.</p>
+          <p>Tente outro nome ou outra plataforma.</p>
+          {temFiltro && (
+            <button type="button" className="btn btn-outline-primary" onClick={() => setParametros({})}>
+              Ver o catálogo inteiro
+            </button>
+          )}
         </EstadoVazio>
       )}
 
       {!carregando && !erro && resultado?.itens.length > 0 && (
         <>
-          <div className="row row-cols-1 row-cols-sm-2 row-cols-lg-4 g-3">
+          <p className="mb-4" aria-live="polite">
+            {resultado.totalItens} {resultado.totalItens === 1 ? 'jogo encontrado' : 'jogos encontrados'}
+            {resultado.totalPaginas > 1 && ` · página ${resultado.pagina} de ${resultado.totalPaginas}`}
+          </p>
+          <div className="row row-cols-1 row-cols-md-3 row-cols-lg-4 prateleira">
             {resultado.itens.map((jogo) => (
               <div className="col" key={jogo.id}>
                 <CardJogo jogo={jogo} />

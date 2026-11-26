@@ -2,24 +2,27 @@ import { Link } from 'react-router-dom'
 import { formatarPreco } from '../lib/formato'
 
 // Só desenha o jogo que recebe por props: não busca nada nem guarda estado.
+// O cartão é um cartucho: rótulo com plataforma, nome, ano e condição,
+// etiqueta laranja com o preço e, se for o caso, o carimbo de esgotado.
 export default function CardJogo({ jogo }) {
   const esgotado = jogo.estoque === 0
   return (
-    <article className="card h-100 position-relative">
-      <div className="card-body d-flex flex-column">
-        <p className="small text-body-secondary mb-1">{jogo.nomePlataforma}</p>
-        <h2 className="h6 card-title">
-          <Link to={`/jogos/${jogo.id}`} className="stretched-link text-reset text-decoration-none">
-            {jogo.nome}
-          </Link>
-        </h2>
-        <p className="small mb-1">{jogo.anoLancamento} · {jogo.descricaoCondicao}</p>
-        <p className="small text-body-secondary">{jogo.generos.join(', ')}</p>
-        <div className="mt-auto d-flex align-items-center justify-content-between">
-          <strong>{formatarPreco(jogo.preco)}</strong>
-          {esgotado && <span className="badge text-bg-secondary">Esgotado</span>}
+    <article className="jogo">
+      <div className="cartucho">
+        <div className="cartucho-casca" aria-hidden="true" />
+        <div className="cartucho-rotulo">
+          <p className="cartucho-plataforma">{jogo.nomePlataforma}</p>
+          <h2 className="cartucho-nome">
+            <Link to={`/jogos/${jogo.id}`} className="stretched-link">{jogo.nome}</Link>
+          </h2>
+          <p className="cartucho-meta">{jogo.anoLancamento} · {jogo.descricaoCondicao}</p>
         </div>
+        <p className="etiqueta">
+          <span className="visually-hidden">Preço: </span>{formatarPreco(jogo.preco)}
+        </p>
+        {esgotado && <p className="carimbo">Esgotado</p>}
       </div>
+      <p className="jogo-generos">{jogo.generos.join(', ')}</p>
     </article>
   )
 }

@@ -40,27 +40,45 @@ export default function DetalheJogo() {
 
   return (
     <section>
-      <Link to="/" className="d-inline-block mb-3">Voltar ao catálogo</Link>
+      <Link to="/" className="d-inline-flex align-items-center mb-4 fw-semibold link-voltar">
+        <span aria-hidden="true">←</span>&nbsp;Voltar ao catálogo
+      </Link>
 
       {carregando && <Carregando texto="Carregando jogo..." />}
       {/* Tentar de novo só ajuda se a falha for passageira; num 404, não. */}
       <MensagemErro mensagem={erro} aoTentarNovamente={naoEncontrado ? undefined : carregarJogo} />
 
       {!carregando && !erro && jogo && (
-        <article>
-          <h1 className="h3">{jogo.nome}</h1>
-          <p className="text-body-secondary">{jogo.nomePlataforma}, {jogo.anoLancamento}</p>
-          <p className="fs-4 fw-bold">{formatarPreco(jogo.preco)}</p>
-          <dl className="row">
-            <dt className="col-sm-3">Condição</dt>
-            <dd className="col-sm-9">{jogo.descricaoCondicao}</dd>
-            <dt className="col-sm-3">Estoque</dt>
-            <dd className="col-sm-9">{jogo.estoque > 0 ? `${jogo.estoque} em estoque` : 'Esgotado'}</dd>
-            <dt className="col-sm-3">Gêneros</dt>
-            <dd className="col-sm-9">{jogo.generos.map((g) => g.nome).join(', ')}</dd>
-          </dl>
-          {/* Descrição é opcional: sem ela, a seção não aparece (nada de "null"). */}
-          {jogo.descricao && <p>{jogo.descricao}</p>}
+        <article className="row g-4 g-lg-5 align-items-start">
+          <div className="col-12 col-md-5">
+            {/* O cartucho grande é a imagem do produto. */}
+            <div className="cartucho cartucho-grande" aria-hidden="true">
+              <div className="cartucho-casca" />
+              <div className="cartucho-rotulo">
+                <p className="cartucho-plataforma">{jogo.nomePlataforma}</p>
+                <p className="cartucho-nome">{jogo.nome}</p>
+                <p className="cartucho-meta">{jogo.anoLancamento}</p>
+              </div>
+              {jogo.estoque === 0 && <p className="carimbo">Esgotado</p>}
+            </div>
+          </div>
+          <div className="col-12 col-md-7">
+            <h1 className="titulo-pagina">{jogo.nome}</h1>
+            <p className="subtitulo-pagina">{jogo.nomePlataforma}, {jogo.anoLancamento}</p>
+            <p className="etiqueta etiqueta-grande mb-4">
+              <span className="visually-hidden">Preço: </span>{formatarPreco(jogo.preco)}
+            </p>
+            <dl className="row painel ficha mx-0 mb-4">
+              <dt className="col-5 col-sm-4">Condição</dt>
+              <dd className="col-7 col-sm-8">{jogo.descricaoCondicao}</dd>
+              <dt className="col-5 col-sm-4">Estoque</dt>
+              <dd className="col-7 col-sm-8">{jogo.estoque > 0 ? `${jogo.estoque} em estoque` : 'Esgotado'}</dd>
+              <dt className="col-5 col-sm-4">Gêneros</dt>
+              <dd className="col-7 col-sm-8 mb-0">{jogo.generos.map((g) => g.nome).join(', ')}</dd>
+            </dl>
+            {/* Descrição é opcional: sem ela, a seção não aparece (nada de "null"). */}
+            {jogo.descricao && <p className="descricao">{jogo.descricao}</p>}
+          </div>
         </article>
       )}
     </section>
