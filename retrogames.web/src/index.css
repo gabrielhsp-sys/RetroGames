@@ -543,6 +543,88 @@ h1, h2, h3, .titulo {
   margin: 0 auto 1.25rem;
 }
 
+.estado-sucesso {
+  border-color: var(--sucesso);
+  border-left-width: 8px;
+}
+
+.estado-sucesso .estado-icone {
+  background: var(--sucesso);
+}
+
+/* ---------- Administração: ferramenta, sem cartucho nem etiqueta ---------- */
+.tabela-admin {
+  --bs-table-bg: var(--rotulo);
+  --bs-table-color: var(--tinta);
+  --bs-table-border-color: #d9d7d0;
+  --bs-table-hover-bg: #ebe8e0;
+}
+
+.tabela-admin thead th {
+  font-family: var(--fonte-titulo);
+  font-stretch: 87%;
+  font-weight: 800;
+  border-bottom: 2px solid var(--tinta);
+  white-space: nowrap;
+}
+
+.tabela-admin th,
+.tabela-admin td {
+  padding: 0.6rem 0.9rem;
+}
+
+.linha-em-edicao > * {
+  --bs-table-bg: #e3dcf0;
+  box-shadow: inset 4px 0 0 var(--roxo);
+}
+
+.situacao {
+  display: inline-block;
+  padding: 0.15rem 0.6rem;
+  border-radius: 999px;
+  border: 2px solid currentColor;
+  font-weight: 700;
+  font-size: 0.85rem;
+}
+
+.situacao-ativo { color: var(--sucesso); }
+.situacao-inativo { color: var(--tinta-suave); border-style: dashed; }
+
+.form-control.is-invalid,
+.form-select.is-invalid {
+  border-color: var(--erro);
+  background-image: none;
+  padding-right: 0.75rem;
+}
+
+.invalid-feedback {
+  color: var(--erro);
+  font-weight: 600;
+}
+
+.form-check-input {
+  width: 1.35em;
+  height: 1.35em;
+  border: 2px solid var(--ranhura);
+  background-color: var(--rotulo);
+}
+
+.form-check-input:checked {
+  background-color: var(--roxo);
+  border-color: var(--roxo);
+}
+
+.form-check-label {
+  padding-left: 0.25rem;
+}
+
+.form-check {
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
 /* ---------- Paginação ---------- */
 .pagination {
   --bs-pagination-color: var(--roxo);
