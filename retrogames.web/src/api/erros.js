@@ -8,3 +8,8 @@ export function obterMensagemErro(erro) {
   }
   return envelope.errorMessage || 'Ocorreu um erro inesperado.'
 }
+
+// O registro pedido não existe (HTTP 404): tentar de novo não adianta.
+export function ehNaoEncontrado(erro) {
+  return erro?.response?.status === 404
+}

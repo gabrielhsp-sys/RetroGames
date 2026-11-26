@@ -15,18 +15,28 @@ export default function Catalogo() {
   const busca = parametros.get('busca') ?? ''
   const idPlataforma = parametros.get('idPlataforma') ?? ''
   const idGenero = parametros.get('idGenero') ?? ''
-  const pagina = Number(parametros.get('pagina') ?? 1)
+  const pagina = Number(parametros.get('pagina')) || 1 // ?pagina=abc vira 1
 
   const [plataformas, setPlataformas] = useState([])
   const [generos, setGeneros] = useState([])
   const [resultado, setResultado] = useState(null)
   const [carregando, setCarregando] = useState(true)
   const [erro, setErro] = useState('')
-  // Listas dos filtros: carregam uma vez.
-  useEffect(() => {
-    plataformaApi.listar().then(setPlataformas).catch(() => setPlataformas([]))
-    generoApi.listar().then(setGeneros).catch(() => setGeneros([]))
+  const [erroListas, setErroListas] = useState('')
+  // Listas dos filtros: carregam uma vez (e de novo no Tentar novamente, se falharam).
+  const carregarListas = useCallback(() => {
+    setErroListas('')
+    Promise.all([plataformaApi.listar(), generoApi.listar()])
+      .then(([listaPlataformas, listaGeneros]) => {
+        setPlataformas(listaPlataformas)
+        setGeneros(listaGeneros)
+      })
+      .catch((falha) => setErroListas(obterMensagemErro(falha)))
   }, [])
+
+  useEffect(() => {
+    carregarListas()
+  }, [carregarListas])
 
   // Jogos: recarregam sempre que um filtro da URL muda.
   const carregarJogos = useCallback(() => {
@@ -111,6 +121,13 @@ export default function Catalogo() {
 
       {carregando && <Carregando texto="Carregando jogos..." />}
       <MensagemErro mensagem={erro} aoTentarNovamente={carregarJogos} />
+      {/* Só avisa das listas quando os jogos carregaram: evita dois alertas iguais. */}
+      {!erro && (
+        <MensagemErro
+          mensagem={erroListas && `Os filtros não carregaram. ${erroListas}`}
+          aoTentarNovamente={carregarListas}
+        />
+      )}
 
       {!carregando && !erro && resultado?.itens.length === 0 && (
         <EstadoVazio titulo="Nenhum jogo encontrado.">

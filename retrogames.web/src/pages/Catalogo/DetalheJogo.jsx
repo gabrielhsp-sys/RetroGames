@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { jogoApi } from '../../api/servicos'
-import { obterMensagemErro } from '../../api/erros'
+import { ehNaoEncontrado, obterMensagemErro } from '../../api/erros'
 import { formatarPreco } from '../../lib/formato'
 import { Carregando, MensagemErro } from '../../components/MensagensEstado'
 
@@ -16,13 +16,20 @@ export default function DetalheJogo() {
     setCarregando(true)
     setErro('')
     setNaoEncontrado(false)
+    // A rota da API só aceita número: /jogos/abc nem chega a ser consultado.
+    if (!/^\d+$/.test(id)) {
+      setErro('Jogo não encontrado.')
+      setNaoEncontrado(true)
+      setCarregando(false)
+      return
+    }
     jogoApi
       .buscarPorId(id)
       .then(setJogo)
       // 404 (código 103): a API manda "Jogo não encontrado." no errorMessage.
       .catch((falha) => {
         setErro(obterMensagemErro(falha))
-        setNaoEncontrado(falha.response?.status === 404)
+        setNaoEncontrado(ehNaoEncontrado(falha))
       })
       .finally(() => setCarregando(false))
   }, [id])
