@@ -193,6 +193,50 @@ h1, h2, h3, .titulo {
   box-shadow: none;
 }
 
+/* Botão claro sobre a barra escura (Entrar, Sair). */
+.btn-barra {
+  --bs-btn-color: var(--rotulo);
+  --bs-btn-border-color: var(--rotulo);
+  --bs-btn-hover-color: var(--tinta);
+  --bs-btn-hover-bg: var(--rotulo);
+  --bs-btn-hover-border-color: var(--rotulo);
+  --bs-btn-active-color: var(--tinta);
+  --bs-btn-active-bg: var(--plastico);
+  --bs-btn-active-border-color: var(--plastico);
+  display: inline-flex;
+  align-items: center;
+}
+
+.barra .btn-barra.active {
+  background: var(--rotulo);
+  color: var(--tinta);
+}
+
+.barra .dropdown-toggle {
+  background: none;
+  border: 0;
+  border-bottom: 3px solid transparent;
+}
+
+.dropdown-menu {
+  --bs-dropdown-bg: var(--rotulo);
+  --bs-dropdown-color: var(--tinta);
+  --bs-dropdown-border-color: var(--ranhura);
+  --bs-dropdown-border-width: 2px;
+  --bs-dropdown-link-color: var(--tinta);
+  --bs-dropdown-link-hover-color: var(--rotulo);
+  --bs-dropdown-link-hover-bg: var(--roxo);
+  --bs-dropdown-link-active-color: var(--rotulo);
+  --bs-dropdown-link-active-bg: var(--roxo);
+}
+
+.dropdown-item {
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  font-weight: 600;
+}
+
 /* ---------- Rodapé ---------- */
 .rodape {
   background: var(--tinta);
