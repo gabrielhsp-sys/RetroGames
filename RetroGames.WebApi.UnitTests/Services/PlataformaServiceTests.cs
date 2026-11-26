@@ -38,4 +38,87 @@ public class PlataformaServiceTests
         // Assert
         Assert.Equal(BusinessErrors.PLATAFORMA_NAO_ENCONTRADA, excecao.Erro);
     }
+
+    [Fact]
+    public async Task Inserir_NomeJaCadastrado_LancaNomeDuplicadoENaoInsere()
+    {
+        // Arrange
+        var plataforma = new Plataforma { Nome = "Super Nintendo", Fabricante = "Nintendo", AnoLancamento = 1990 };
+        plataformaRepository.Setup(r => r.ExisteComNomeAsync("Super Nintendo", null)).ReturnsAsync(true);
+        var service = CriarService();
+
+        // Act
+        var excecao = await Assert.ThrowsAsync<BusinessRuleException>(() => service.InserirAsync(plataforma));
+
+        // Assert
+        Assert.Equal(BusinessErrors.PLATAFORMA_NOME_DUPLICADO, excecao.Erro);
+        plataformaRepository.Verify(r => r.InserirAsync(It.IsAny<Plataforma>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task Inserir_RepositoryLancaRegistroDuplicado_LancaNomeDuplicado()
+    {
+        // Arrange: o nome estava livre na conferência, mas outra gravação chegou antes ao banco.
+        var plataforma = new Plataforma { Nome = "Super Nintendo", Fabricante = "Nintendo", AnoLancamento = 1990 };
+        plataformaRepository.Setup(r => r.ExisteComNomeAsync("Super Nintendo", null)).ReturnsAsync(false);
+        plataformaRepository.Setup(r => r.InserirAsync(plataforma))
+            .ThrowsAsync(new RegistroDuplicadoException("Registro duplicado.", new Exception()));
+        var service = CriarService();
+
+        // Act
+        var excecao = await Assert.ThrowsAsync<BusinessRuleException>(() => service.InserirAsync(plataforma));
+
+        // Assert
+        Assert.Equal(BusinessErrors.PLATAFORMA_NOME_DUPLICADO, excecao.Erro);
+    }
+
+    [Fact]
+    public async Task Inserir_NomeLivre_DevolvePlataformaComIdGerado()
+    {
+        // Arrange
+        var plataforma = new Plataforma { Nome = "Super Nintendo", Fabricante = "Nintendo", AnoLancamento = 1990 };
+        plataformaRepository.Setup(r => r.ExisteComNomeAsync("Super Nintendo", null)).ReturnsAsync(false);
+        plataformaRepository.Setup(r => r.InserirAsync(plataforma)).ReturnsAsync(7);
+        var service = CriarService();
+
+        // Act
+        var resultado = await service.InserirAsync(plataforma);
+
+        // Assert
+        Assert.Equal(7, resultado.Id);
+    }
+
+    [Fact]
+    public async Task Alterar_MantendoOProprioNome_GravaAlteracao()
+    {
+        // Arrange: o nome existe, mas é da própria plataforma 3. Só a consulta que
+        // ignora o id 3 responde "não existe"; a que não ignora responderia "existe".
+        var plataforma = new Plataforma { Id = 3, Nome = "Super Nintendo", Fabricante = "Nintendo", AnoLancamento = 1990 };
+        plataformaRepository.Setup(r => r.BuscarPorIdAsync(3)).ReturnsAsync(new Plataforma { Id = 3, Nome = "Super Nintendo" });
+        plataformaRepository.Setup(r => r.ExisteComNomeAsync("Super Nintendo", null)).ReturnsAsync(true);
+        plataformaRepository.Setup(r => r.ExisteComNomeAsync("Super Nintendo", 3)).ReturnsAsync(false);
+        var service = CriarService();
+
+        // Act
+        await service.AlterarAsync(plataforma);
+
+        // Assert
+        plataformaRepository.Verify(r => r.AlterarAsync(plataforma), Times.Once);
+    }
+
+    [Fact]
+    public async Task Excluir_PlataformaComJogos_LancaPossuiJogosENaoExclui()
+    {
+        // Arrange
+        plataformaRepository.Setup(r => r.BuscarPorIdAsync(3)).ReturnsAsync(new Plataforma { Id = 3, Nome = "Super Nintendo" });
+        plataformaRepository.Setup(r => r.PossuiJogosAsync(3)).ReturnsAsync(true);
+        var service = CriarService();
+
+        // Act
+        var excecao = await Assert.ThrowsAsync<BusinessRuleException>(() => service.ExcluirAsync(3));
+
+        // Assert
+        Assert.Equal(BusinessErrors.PLATAFORMA_POSSUI_JOGOS, excecao.Erro);
+        plataformaRepository.Verify(r => r.ExcluirAsync(It.IsAny<int>()), Times.Never);
+    }
 }
