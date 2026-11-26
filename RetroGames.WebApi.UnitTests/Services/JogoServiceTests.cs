@@ -210,4 +210,48 @@ public class JogoServiceTests
         Assert.Equal(BusinessErrors.JOGO_NAO_ENCONTRADO, excecao.Erro);
         jogoRepository.Verify(r => r.DesativarAsync(It.IsAny<int>()), Times.Never);
     }
+
+    [Fact]
+    public async Task Desativar_JogoExistente_Desativa()
+    {
+        // Arrange
+        jogoRepository.Setup(r => r.BuscarPorIdAsync(10)).ReturnsAsync(new Jogo { Id = 10, Nome = "Chrono Trigger", Ativo = true });
+        var service = CriarService();
+
+        // Act
+        await service.DesativarAsync(10);
+
+        // Assert: RN03, o jogo é marcado como inativo (o Repository de jogos não tem exclusão).
+        jogoRepository.Verify(r => r.DesativarAsync(10), Times.Once);
+    }
+
+    [Fact]
+    public async Task Listar_NaoAdministradorPedindoInativos_NaoIncluiInativos()
+    {
+        // Arrange: quem chama não é administrador, mas pede os inativos.
+        usuarioAtual.Setup(u => u.EhAdministrador).Returns(false);
+        jogoRepository.Setup(r => r.ListarAsync(It.IsAny<FiltroJogo>())).ReturnsAsync((new List<Jogo>(), 0));
+        var service = CriarService();
+
+        // Act
+        await service.ListarAsync(new FiltroJogo { IncluirInativos = true });
+
+        // Assert: RN04, o pedido é ignorado e o filtro chega ao Repository sem inativos.
+        jogoRepository.Verify(r => r.ListarAsync(It.Is<FiltroJogo>(filtro => !filtro.IncluirInativos)), Times.Once);
+    }
+
+    [Fact]
+    public async Task BuscarPorId_JogoInativoParaNaoAdministrador_LancaJogoNaoEncontrado()
+    {
+        // Arrange: o jogo 10 existe, mas está inativo, e quem chama não é administrador.
+        usuarioAtual.Setup(u => u.EhAdministrador).Returns(false);
+        jogoRepository.Setup(r => r.BuscarPorIdAsync(10)).ReturnsAsync(new Jogo { Id = 10, Nome = "Chrono Trigger", Ativo = false });
+        var service = CriarService();
+
+        // Act
+        var excecao = await Assert.ThrowsAsync<BusinessRuleException>(() => service.BuscarPorIdAsync(10));
+
+        // Assert: RN04, para quem não é administrador, jogo inativo é como jogo que não existe.
+        Assert.Equal(BusinessErrors.JOGO_NAO_ENCONTRADO, excecao.Erro);
+    }
 }

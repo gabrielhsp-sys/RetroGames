@@ -107,6 +107,23 @@ public class PlataformaServiceTests
     }
 
     [Fact]
+    public async Task Alterar_NomeDeOutraPlataforma_LancaNomeDuplicadoENaoGrava()
+    {
+        // Arrange: a plataforma 3 tenta usar um nome que já é de outra plataforma.
+        var plataforma = new Plataforma { Id = 3, Nome = "Mega Drive", Fabricante = "Nintendo", AnoLancamento = 1990 };
+        plataformaRepository.Setup(r => r.BuscarPorIdAsync(3)).ReturnsAsync(new Plataforma { Id = 3, Nome = "Super Nintendo" });
+        plataformaRepository.Setup(r => r.ExisteComNomeAsync("Mega Drive", 3)).ReturnsAsync(true);
+        var service = CriarService();
+
+        // Act
+        var excecao = await Assert.ThrowsAsync<BusinessRuleException>(() => service.AlterarAsync(plataforma));
+
+        // Assert
+        Assert.Equal(BusinessErrors.PLATAFORMA_NOME_DUPLICADO, excecao.Erro);
+        plataformaRepository.Verify(r => r.AlterarAsync(It.IsAny<Plataforma>()), Times.Never);
+    }
+
+    [Fact]
     public async Task Excluir_PlataformaComJogos_LancaPossuiJogosENaoExclui()
     {
         // Arrange

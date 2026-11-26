@@ -7,7 +7,8 @@ namespace RetroGames.WebApi.UnitTests.Services;
 
 /// <summary>
 /// Teste do GeneroService. Ele só lê dados, mas também tem teste: assim todo
-/// Service tem pelo menos um. O Repository é um mock.
+/// Service do catálogo (plataformas, jogos, gêneros e condições) tem teste.
+/// O Repository é um mock.
 /// </summary>
 public class GeneroServiceTests
 {
