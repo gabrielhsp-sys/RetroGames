@@ -13,3 +13,17 @@ export function obterMensagemErro(erro) {
 export function ehNaoEncontrado(erro) {
   return erro?.response?.status === 404
 }
+
+// Falha de validação (400, responseCode 3): { campo: [mensagens] } vira
+// { campo: 'primeira mensagem' }, para mostrar embaixo de cada campo.
+// Nos demais casos, {}.
+export function obterErrosDosCampos(erro) {
+  const envelope = erro?.response?.data
+  if (envelope?.responseCode !== 3 || !envelope.data) return {}
+  return Object.fromEntries(
+    Object.entries(envelope.data).map(([campo, mensagens]) => [
+      campo,
+      Array.isArray(mensagens) ? mensagens[0] : String(mensagens),
+    ]),
+  )
+}

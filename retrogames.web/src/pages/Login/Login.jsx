@@ -33,7 +33,7 @@ export default function Login() {
   }
 
   return (
-    <section className="row justify-content-center align-items-center g-5 py-md-4">
+    <section className="row justify-content-center align-items-center g-4 g-lg-5 py-md-4">
       <div className="col-md-5 col-lg-4 d-none d-md-block">
         {/* Cartucho sem jogo: único adorno da tela; some no celular. */}
         <div className="cartucho cartucho-vazio cartucho-grande" aria-hidden="true">
