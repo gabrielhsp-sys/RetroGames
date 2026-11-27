@@ -39,6 +39,18 @@ public class PedidoRepository(RepositoryConfig config) : RepositoryBase(config),
         return pedidos;
     }
 
+    public async Task<Pedido?> BuscarPorIdAsync(int id)
+    {
+        await using var conexao = await CriarConexaoAsync();
+        await using var comando = CriarComando(conexao,
+            "SELECT co_seq_pedido, dt_pedido, vl_total, co_usuario, co_situacao_pedido FROM tb_pedido " +
+            "WHERE co_seq_pedido = @id");
+        AdicionarParametro(comando, "@id", id);
+        await using var leitor = await comando.ExecuteReaderAsync();
+
+        return await leitor.ReadAsync() ? Mapear(leitor) : null;
+    }
+
     /// <summary>Converte a linha atual do leitor num Pedido, coluna por coluna.</summary>
     private static Pedido Mapear(MySqlDataReader leitor)
     {

@@ -10,4 +10,7 @@ public interface IPedidoRepository
 
     /// <summary>Os pedidos de um usuário, do mais recente para o mais antigo.</summary>
     Task<List<Pedido>> ListarPorUsuarioAsync(int idUsuario);
+
+    /// <summary>O pedido com o id informado, ou nulo se não existir.</summary>
+    Task<Pedido?> BuscarPorIdAsync(int id);
 }

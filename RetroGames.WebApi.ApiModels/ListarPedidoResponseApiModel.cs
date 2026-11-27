@@ -1,6 +1,6 @@
 namespace RetroGames.WebApi.ApiModels;
 
-/// <summary>Um pedido com a situação, o total e os itens (POST /api/Pedido e GET /api/Pedido/meus).</summary>
+/// <summary>Um pedido com a situação, o total e os itens (POST /api/Pedido, GET /api/Pedido/meus e GET /api/Pedido/{id}).</summary>
 public class ListarPedidoResponseApiModel
 {
     public int Id { get; set; }

@@ -7,7 +7,7 @@ using RetroGames.Services;
 namespace RetroGames.WebApi.UnitTests.Services;
 
 /// <summary>
-/// Testes do PedidoService (C04 e C05). Cada repositório que o Service usa é um mock,
+/// Testes do PedidoService (C04 a C07). Cada repositório que o Service usa é um mock,
 /// e o IRepositorySet simulado devolve todos eles. O usuário logado é o 5.
 /// Nenhum teste usa o banco.
 /// </summary>
@@ -311,5 +311,86 @@ public class PedidoServiceTests
         // Assert
         Assert.Empty(pedidos);
         itemPedidoRepository.Verify(r => r.ListarPorPedidosAsync(It.IsAny<List<int>>()), Times.Never);
+    }
+
+    /// <summary>O pedido 20 é do usuário informado, com um item do jogo 1 (2 × 100,00).</summary>
+    private void PedidoNoBanco(int idDono, int idSituacao = SituacaoPedidoIds.Pendente)
+    {
+        pedidoRepository.Setup(r => r.BuscarPorIdAsync(20)).ReturnsAsync(new Pedido
+        {
+            Id = 20, IdUsuario = idDono, Total = 200.00m, IdSituacaoPedido = idSituacao,
+            Data = new DateTime(2026, 11, 25, 14, 0, 0, DateTimeKind.Utc),
+        });
+        itemPedidoRepository.Setup(r => r.ListarPorPedidosAsync(It.IsAny<List<int>>())).ReturnsAsync(new List<ItemPedido>
+        {
+            new() { Id = 1, IdPedido = 20, IdJogo = 1, Quantidade = 2, ValorUnitario = 100.00m },
+        });
+        JogosNoBanco(CriarJogo(1, 100.00m, 5));
+    }
+
+    [Fact]
+    public async Task Obter_PedidoDoProprioCliente_DevolveSituacaoDataItensETotal()
+    {
+        // Arrange
+        PedidoNoBanco(idDono: IdUsuarioLogado);
+        var service = CriarService();
+
+        // Act
+        var detalhe = await service.ObterAsync(20);
+
+        // Assert
+        Assert.Equal(20, detalhe.Pedido.Id);
+        Assert.Equal("Pendente", detalhe.DescricaoSituacao);
+        Assert.Equal(new DateTime(2026, 11, 25, 14, 0, 0, DateTimeKind.Utc), detalhe.Pedido.Data);
+        Assert.Equal(200.00m, detalhe.Pedido.Total);
+        var item = Assert.Single(detalhe.Itens);
+        Assert.Equal("Jogo 1", item.NomeJogo);
+        Assert.Equal(2, item.Item.Quantidade);
+    }
+
+    [Fact]
+    public async Task Obter_PedidoDeOutroCliente_LancaPedidoDeOutroUsuario()
+    {
+        // Arrange: o pedido é do usuário 99; o logado (5) é cliente.
+        PedidoNoBanco(idDono: 99);
+        usuarioAtual.Setup(u => u.EhAdministrador).Returns(false);
+        var service = CriarService();
+
+        // Act
+        var excecao = await Assert.ThrowsAsync<BusinessRuleException>(() => service.ObterAsync(20));
+
+        // Assert: e nem chega a buscar os itens do pedido alheio.
+        Assert.Equal(BusinessErrors.PEDIDO_DE_OUTRO_USUARIO, excecao.Erro);
+        itemPedidoRepository.Verify(r => r.ListarPorPedidosAsync(It.IsAny<List<int>>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task Obter_AdministradorEPedidoDeOutroUsuario_DevolveODetalhe()
+    {
+        // Arrange
+        PedidoNoBanco(idDono: 99);
+        usuarioAtual.Setup(u => u.EhAdministrador).Returns(true);
+        var service = CriarService();
+
+        // Act
+        var detalhe = await service.ObterAsync(20);
+
+        // Assert
+        Assert.Equal(20, detalhe.Pedido.Id);
+        Assert.Equal(99, detalhe.Pedido.IdUsuario);
+    }
+
+    [Fact]
+    public async Task Obter_PedidoInexistente_LancaPedidoNaoEncontrado()
+    {
+        // Arrange
+        pedidoRepository.Setup(r => r.BuscarPorIdAsync(It.IsAny<int>())).ReturnsAsync((Pedido?)null);
+        var service = CriarService();
+
+        // Act
+        var excecao = await Assert.ThrowsAsync<BusinessRuleException>(() => service.ObterAsync(999));
+
+        // Assert
+        Assert.Equal(BusinessErrors.PEDIDO_NAO_ENCONTRADO, excecao.Erro);
     }
 }

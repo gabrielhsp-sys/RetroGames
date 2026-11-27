@@ -93,6 +93,30 @@ public class PedidoService(IRepositorySet repositorio, IUsuarioAtualService usua
         }
 
         // Sempre as mesmas quatro consultas, qualquer que seja o número de pedidos.
+        return await DetalharAsync(pedidos);
+    }
+
+    public async Task<PedidoDetalheServiceModel> ObterAsync(int id)
+    {
+        var pedido = await repositorio.Pedido.BuscarPorIdAsync(id)
+            ?? throw new BusinessRuleException(BusinessErrors.PEDIDO_NAO_ENCONTRADO);
+
+        // O cliente só vê os próprios pedidos; o administrador vê qualquer um.
+        // A checagem é depois da busca: pedido inexistente é 404 para todos.
+        if (!usuarioAtual.EhAdministrador && pedido.IdUsuario != usuarioAtual.Id)
+        {
+            throw new BusinessRuleException(BusinessErrors.PEDIDO_DE_OUTRO_USUARIO);
+        }
+
+        return (await DetalharAsync(new List<Pedido> { pedido }))[0];
+    }
+
+    /// <summary>
+    /// Busca os itens, os jogos e as situações de uma lista de pedidos (três consultas,
+    /// qualquer que seja o número de pedidos) e monta os detalhes, na ordem recebida.
+    /// </summary>
+    private async Task<List<PedidoDetalheServiceModel>> DetalharAsync(List<Pedido> pedidos)
+    {
         var itens = await repositorio.ItemPedido.ListarPorPedidosAsync(
             pedidos.Select(pedido => pedido.Id).ToList());
         var jogos = await repositorio.Jogo.ListarPorIdsAsync(

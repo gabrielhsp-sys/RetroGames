@@ -2,7 +2,7 @@ using RetroGames.Model.Model;
 
 namespace RetroGames.Services;
 
-/// <summary>Regras de negócio de pedidos do Módulo de Compras (C04 e C05).</summary>
+/// <summary>Regras de negócio de pedidos do Módulo de Compras (C04 a C07).</summary>
 public interface IPedidoService
 {
     /// <summary>
@@ -18,4 +18,12 @@ public interface IPedidoService
     /// com a situação, o total e os itens (jogo, quantidade e preço pago).
     /// </summary>
     Task<List<PedidoDetalheServiceModel>> ListarMeusAsync();
+
+    /// <summary>
+    /// C06: o detalhe de um pedido, com a situação, a data, os itens e o total.
+    /// Pedido inexistente: PEDIDO_NAO_ENCONTRADO (404, código 109). O cliente só vê
+    /// os próprios pedidos: o de outro cliente dá PEDIDO_DE_OUTRO_USUARIO (403, código 113).
+    /// O administrador vê qualquer pedido.
+    /// </summary>
+    Task<PedidoDetalheServiceModel> ObterAsync(int id);
 }

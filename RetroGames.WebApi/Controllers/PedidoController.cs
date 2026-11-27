@@ -35,4 +35,16 @@ public class PedidoController(IPedidoService pedidoService) : ControllerBase
         return Ok(new RetroGamesResponseApiModel<List<ListarPedidoResponseApiModel>>(
             pedidos.Select(pedido => pedido.ParaResponse()).ToList()));
     }
+
+    /// <summary>
+    /// GET /api/Pedido/{id} (C06): o detalhe de um pedido. O dono ou o administrador;
+    /// pedido de outro cliente 403 (código 113), inexistente 404 (código 109).
+    /// O {id:int} separa esta rota de /meus.
+    /// </summary>
+    [HttpGet("{id:int}")]
+    public async Task<ActionResult<RetroGamesResponseApiModel<ListarPedidoResponseApiModel>>> ListarPorId(int id)
+    {
+        var detalhe = await pedidoService.ObterAsync(id);
+        return Ok(new RetroGamesResponseApiModel<ListarPedidoResponseApiModel>(detalhe.ParaResponse()));
+    }
 }
