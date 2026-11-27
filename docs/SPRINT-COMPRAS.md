@@ -1,6 +1,6 @@
 # Sprint do Módulo de Compras
 
-Quadro da sprint do desafio do Módulo de Compras (DCE701). Versão do grupo: **completa** (C01 a C08), grupo de 4 estudantes.
+Quadro da sprint do desafio do Módulo de Compras (DCE701). Este repositório é individual e implementa a versão **completa** (C01 a C08).
 
 ## Objetivo da sprint
 
@@ -176,7 +176,7 @@ Só front-end: o carrinho não chega à API até a finalização (C04).
 
 As tabelas já existem (C04, `909429c`).
 
-**Commits:** `4ce88fc` (só os códigos de erro).
+**Commits:** `4ce88fc` (códigos de erro), `62f9b12`, `908d815` e `603a6d3`.
 
 ## C07: Gestão de pedidos
 
@@ -203,7 +203,7 @@ As tabelas já existem (C04, `909429c`).
 
 As tabelas já existem (C04, `909429c`).
 
-**Commits:** `4ce88fc` (só os códigos de erro).
+**Commits:** `4ce88fc` (códigos de erro), `51ec209`, `827f112` e `603a6d3`.
 
 ## C08: Manutenção de gêneros
 
