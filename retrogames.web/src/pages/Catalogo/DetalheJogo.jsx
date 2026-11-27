@@ -91,14 +91,6 @@ export default function DetalheJogo() {
             <p className="etiqueta etiqueta-grande mb-4">
               <span className="visually-hidden">Preço: </span>{formatarPreco(jogo.preco)}
             </p>
-            <dl className="row painel ficha mx-0 mb-4">
-              <dt className="col-5 col-sm-4">Condição</dt>
-              <dd className="col-7 col-sm-8">{jogo.descricaoCondicao}</dd>
-              <dt className="col-5 col-sm-4">Estoque</dt>
-              <dd className="col-7 col-sm-8">{jogo.estoque > 0 ? `${jogo.estoque} em estoque` : 'Esgotado'}</dd>
-              <dt className="col-5 col-sm-4">Gêneros</dt>
-              <dd className="col-7 col-sm-8 mb-0">{jogo.generos.map((g) => g.nome).join(', ')}</dd>
-            </dl>
             <div className="compra mb-4">
               {/* Sem estoque, o botão fica desabilitado e diz por quê (heurística 5). */}
               <button
@@ -126,6 +118,14 @@ export default function DetalheJogo() {
                 </div>
               )}
             </div>
+            <dl className="row painel ficha mx-0 mb-4">
+              <dt className="col-5 col-sm-4">Condição</dt>
+              <dd className="col-7 col-sm-8">{jogo.descricaoCondicao}</dd>
+              <dt className="col-5 col-sm-4">Estoque</dt>
+              <dd className="col-7 col-sm-8">{jogo.estoque > 0 ? `${jogo.estoque} em estoque` : 'Esgotado'}</dd>
+              <dt className="col-5 col-sm-4">Gêneros</dt>
+              <dd className="col-7 col-sm-8 mb-0">{jogo.generos.map((g) => g.nome).join(', ')}</dd>
+            </dl>
             {/* Descrição é opcional: sem ela, a seção não aparece (nada de "null"). */}
             {jogo.descricao && <p className="descricao">{jogo.descricao}</p>}
           </div>

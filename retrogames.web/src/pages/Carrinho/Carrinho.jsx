@@ -139,7 +139,9 @@ export default function Carrinho() {
         <span aria-hidden="true">←</span>&nbsp;Continuar comprando
       </Link>
       <h1 className="titulo-pagina">Carrinho</h1>
-      <p className="subtitulo-pagina">Confira os jogos e as quantidades antes de finalizar a compra.</p>
+      {itens.length > 0 && (
+        <p className="subtitulo-pagina">Confira os jogos e as quantidades antes de finalizar a compra.</p>
+      )}
 
       <div role="status" aria-live="polite">
         {removido && (

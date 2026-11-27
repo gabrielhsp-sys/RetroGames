@@ -18,6 +18,9 @@
   --ranhura: #8d8c94;    /* sulcos e bordas, nunca informação */
   --erro: #8a1c24;
   --sucesso: #1f5c32;
+  /* Extensão da paleta para o Módulo de Compras (estados, nunca ação nem preço).
+     atencao/rótulo 7,79 · atencao/plástico 5,10 · enviado/rótulo 8,26
+     sucesso/rótulo 7,25 · erro/rótulo 8,40 */
   --atencao: #6b4400;   /* aviso que não é erro (limite do carrinho); selo Pendente */
   --enviado: #1d4a7a;   /* selo Enviado */
 
