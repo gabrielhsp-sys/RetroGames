@@ -26,15 +26,15 @@ O quadro foi montado em 27/11/2026. O trabalho feito antes disso não tem histó
 | C03 | Carrinho | Concluído | Gabriel | `8b26aa5`, `6251e2f`, `704fdc5`, `5297081` |
 | C04 | Finalizar compra | Concluído | Gabriel | `909429c`, `4ce88fc`, `8ff0a09`, `2460a1a`, `704fdc5`, `5297081` |
 | C05 | Meus pedidos | Concluído | Gabriel | `df42b7c`, `df3cbff` |
-| C06 | Detalhe do pedido | A fazer | pendente do grupo | `4ce88fc` (só os códigos de erro) |
-| C07 | Gestão de pedidos | A fazer | pendente do grupo | `4ce88fc` (só os códigos de erro) |
+| C06 | Detalhe do pedido | Concluído | Gabriel | `4ce88fc`, `62f9b12`, `908d815`, `603a6d3` |
+| C07 | Gestão de pedidos | Concluído | Gabriel | `4ce88fc`, `51ec209`, `827f112`, `603a6d3` |
 | C08 | Manutenção de gêneros | A fazer | pendente do grupo | `4ce88fc` (só os códigos de erro) |
 
-Os commits `704fdc5` e `5297081` (prefixo `style:`) ajustam a responsividade e a acessibilidade das telas de compra; não citam história no título e aparecem aqui nas histórias cujas telas alteram.
+Os commits `704fdc5`, `5297081` e `603a6d3` (prefixo `style:`) ajustam a responsividade e a acessibilidade das telas de compra e de pedidos; não citam história no título e aparecem aqui nas histórias cujas telas alteram.
 
 ### Critério para marcar uma tarefa como feita
 
-Uma tarefa só tem `[x]` quando um commit da sprint criou ou alterou o arquivo que a implementa e o arquivo existe hoje no `main`. Em 27/11/2026, `dotnet test` passou com 45 testes e 0 falhas, e `npm run build` do `retrogames.web` terminou sem erro. Tarefas sem commit ficam `[ ]`.
+Uma tarefa só tem `[x]` quando um commit da sprint criou ou alterou o arquivo que a implementa e o arquivo existe hoje no `main`. Em 27/11/2026, depois de C06 e C07, `dotnet test` passou com 59 testes e 0 falhas, e `npm run build` do `retrogames.web` terminou sem erro. Tarefas sem commit ficam `[ ]`.
 
 ---
 
@@ -168,11 +168,11 @@ Só front-end: o carrinho não chega à API até a finalização (C04).
 **Tarefas:**
 
 - [x] Erros 109 e 113 em `BusinessErrors` (`4ce88fc`).
-- [ ] Repository: buscar pedido por id em `PedidoRepository`.
-- [ ] Service: `PedidoService` obtém o pedido, com 109 e 113 e acesso do administrador a qualquer pedido.
-- [ ] Testes: `PedidoServiceTests` para dono, administrador, outro cliente (113) e inexistente (109).
-- [ ] Endpoint: `GET /api/Pedido/{id}`.
-- [ ] Tela: detalhe do pedido a partir de Meus pedidos.
+- [x] Repository: `PedidoRepository.BuscarPorIdAsync`; consulta em `database/07-consultas-gestao-pedidos.sql` (`62f9b12`).
+- [x] Service: `PedidoService.ObterAsync` obtém o pedido, com 109 e 113 e acesso do administrador a qualquer pedido (`62f9b12`).
+- [x] Testes: `PedidoServiceTests` (`Obter_*`: dono, administrador, outro cliente 113, inexistente 109) (`62f9b12`).
+- [x] Endpoint: `GET /api/Pedido/{id:int}`, que também torna válido o `Location` do `POST /api/Pedido` (`62f9b12`).
+- [x] Tela: `/pedidos/:id` (qualquer usuário logado), com link "Ver detalhes" em Meus pedidos e estados de 403 e 404 (`908d815`; ajustes em `603a6d3`).
 
 As tabelas já existem (C04, `909429c`).
 
@@ -194,11 +194,12 @@ As tabelas já existem (C04, `909429c`).
 **Tarefas:**
 
 - [x] Erros 109 e 112 em `BusinessErrors` (`4ce88fc`).
-- [ ] Repository: listar pedidos com filtro por situação no SQL e atualizar a situação em `PedidoRepository`; buscar situação por id em `SituacaoPedidoRepository`.
-- [ ] Service: `PedidoService` lista todos com filtro e muda a situação, com 109 e 112; Service de situações para a listagem.
-- [ ] Testes: `PedidoServiceTests` para listagem com filtro, troca de situação, 109 e 112.
-- [ ] Endpoints: `GET /api/Pedido?idSituacao=`, `PUT /api/Pedido/{id}/situacao` e `GET /api/SituacaoPedido`, com `[Authorize(Policy = Politicas.Administrador)]`.
-- [ ] Tela: `/admin/pedidos` com filtro e troca de situação, no menu Administração.
+- [x] Repository: `PedidoRepository.ListarAsync` (filtro `FiltroPedido` no SQL) e `AlterarSituacaoAsync`; `UsuarioRepository.ListarPorIdsAsync` para o nome do cliente. A existência da situação é conferida no Service sobre `SituacaoPedidoRepository.ListarAsync`, sem consulta nova. Consultas em `database/07-consultas-gestao-pedidos.sql` (`51ec209`).
+- [x] Service: `PedidoService.ListarAsync` e `AlterarSituacaoAsync`, com 109 (conferido antes) e 112; `SituacaoPedidoService.ListarAsync` (`51ec209`).
+- [x] Validator: `AlterarSituacaoPedidoRequestValidator` (situação maior que zero) (`51ec209`).
+- [x] Testes: `PedidoServiceTests` (`Listar_*` com e sem filtro e filtro inexistente 112; `AlterarSituacao_*` sucesso, 109 e 112), `SituacaoPedidoServiceTests` e `AlterarSituacaoPedidoRequestValidatorTests` (`51ec209`).
+- [x] Endpoints: `GET /api/Pedido?idSituacao=`, `PUT /api/Pedido/{id}/situacao` e `GET /api/SituacaoPedido`, com `[Authorize(Policy = Politicas.Administrador)]` (`51ec209`).
+- [x] Tela: `/admin/pedidos` com filtro na URL, troca de situação (confirmação só ao cancelar) e item "Pedidos" no menu Administração (`827f112`; ajustes em `603a6d3`).
 
 As tabelas já existem (C04, `909429c`).
 
@@ -241,12 +242,14 @@ Situação em 27/11/2026, dois dias antes da entrega.
 
 - Versão básica completa: C01 a C05, com back-end, testes e telas. Responsável: Gabriel.
 - Banco do módulo (`database/05-compras.sql` e `06-consultas-compras.sql`) e todos os códigos de erro 106 a 113 no catálogo `BusinessErrors`, inclusive os da versão completa.
-- 45 testes unitários passando (`dotnet test`, 27/11/2026) e build do front sem erro.
+- C06 e C07: back-end, testes e telas. Responsável: Gabriel.
+- 59 testes unitários passando (`dotnet test`, 27/11/2026) e build do front sem erro.
 
 **Ainda não pronto:**
 
-- C06, C07 e C08 (versão completa): nenhum endpoint, Service, teste ou tela foi feito.
-- Motivo: a divisão dessas histórias entre os membros do grupo ainda não foi confirmada; os responsáveis ficam pendentes até o grupo decidir.
+- C08 (manutenção de gêneros): nenhum endpoint, Service, teste ou tela foi feito.
+- Motivo: a divisão dessa história entre os membros do grupo ainda não foi confirmada; o responsável fica pendente até o grupo decidir.
+- Decisões em aberto de C07, para o grupo e o professor: o desafio não define regra de transição entre situações (hoje qualquer troca é aceita) nem devolução de estoque ao cancelar (hoje o estoque não volta). A lista do administrador não tem paginação.
 - Fora das histórias, o desafio também pede a atualização da especificação do repositório (endpoints, tabelas, regras e rastreabilidade, seção 7.1); nenhum arquivo versionado tem ainda essa rastreabilidade das histórias C01 a C08.
 
 Esta seção será atualizada ao fim da sprint com o que foi entregue até 29/11/2026.
