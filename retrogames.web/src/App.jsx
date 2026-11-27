@@ -4,6 +4,7 @@ import RotaProtegida from './components/RotaProtegida'
 import FormularioJogo from './pages/Administracao/FormularioJogo'
 import Jogos from './pages/Administracao/Jogos'
 import Pedidos from './pages/Administracao/Pedidos'
+import Genero from './pages/Auxiliares/Genero'
 import Plataforma from './pages/Auxiliares/Plataforma'
 import Cadastro from './pages/Cadastro/Cadastro'
 import Carrinho from './pages/Carrinho/Carrinho'
@@ -40,6 +41,7 @@ export default function App() {
           <Route path="jogos/novo" element={<FormularioJogo />} />
           <Route path="jogos/:id/editar" element={<FormularioJogo />} />
           <Route path="plataformas" element={<Plataforma />} />
+          <Route path="generos" element={<Genero />} />
           <Route path="pedidos" element={<Pedidos />} />
         </Route>
 

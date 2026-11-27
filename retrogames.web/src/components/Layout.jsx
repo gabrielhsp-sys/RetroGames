@@ -83,6 +83,7 @@ export default function Layout() {
                     <ul className="dropdown-menu">
                       <li><NavLink className="dropdown-item" to="/admin/jogos" onClick={fecharMenu}>Jogos</NavLink></li>
                       <li><NavLink className="dropdown-item" to="/admin/plataformas" onClick={fecharMenu}>Plataformas</NavLink></li>
+                      <li><NavLink className="dropdown-item" to="/admin/generos" onClick={fecharMenu}>Gêneros</NavLink></li>
                       <li><NavLink className="dropdown-item" to="/admin/pedidos" onClick={fecharMenu}>Pedidos</NavLink></li>
                     </ul>
                   </li>

@@ -28,6 +28,10 @@ export const plataformaApi = {
 
 export const generoApi = {
   listar: () => api.get('/Genero').then(dados),
+  // C08 (administrador): mesma manutenção das plataformas.
+  inserir: (genero) => api.post('/Genero', genero).then(dados),
+  alterar: (id, genero) => api.put(`/Genero/${id}`, genero).then(dados),
+  excluir: (id) => api.delete(`/Genero/${id}`).then(dados),
 }
 
 export const condicaoJogoApi = {
