@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
-import { jogoApi } from '../../api/servicos'
+import { Link, useNavigate } from 'react-router-dom'
+import { jogoApi, pedidoApi } from '../../api/servicos'
 import { ehNaoEncontrado, obterMensagemErro } from '../../api/erros'
 import { Carregando, EstadoVazio, MensagemErro } from '../../components/MensagensEstado'
 import { limiteDoItem } from '../../contexts/carrinhoContext'
@@ -16,15 +16,37 @@ function situacaoDoItem(item, consulta) {
   return { tipo: 'ok', limite }
 }
 
+const JOGO_INDISPONIVEL = 110
+const ESTOQUE_INSUFICIENTE = 111
+
+// Depois de um 110 ou 111, diz pelo nome o que mudou (heurística 9).
+function descreverPendencias(linhas) {
+  return linhas
+    .map(({ jogo, situacao }) => {
+      if (situacao.tipo === 'acimaDoEstoque') {
+        return `Estoque insuficiente para ${jogo.nome}: ${situacao.limite === 1 ? 'resta 1' : `restam ${situacao.limite}`}.`
+      }
+      if (situacao.tipo === 'esgotado') return `${jogo.nome} esgotou.`
+      if (situacao.tipo === 'indisponivel') return `${jogo?.nome ?? 'Um dos jogos'} não está mais à venda.`
+      return null
+    })
+    .filter(Boolean)
+    .join(' ')
+}
+
 // C03: o carrinho. O navegador guarda só { idJogo, quantidade }; nome, plataforma,
 // preço e estoque vêm da API cada vez que a tela abre, então o total mostrado é
 // sempre o preço atual do banco.
 export default function Carrinho() {
-  const { itens, alterarQuantidade, remover, adicionar } = useCarrinho()
+  const { itens, alterarQuantidade, remover, adicionar, limpar } = useCarrinho()
+  const navigate = useNavigate()
   // { [idJogo]: { jogo } | { indisponivel: true } }: o que a API respondeu sobre cada jogo.
   const [consultas, setConsultas] = useState({})
   const [erroCarga, setErroCarga] = useState('')
   const [removido, setRemovido] = useState(null) // último item removido, para "Desfazer"
+  const [enviando, setEnviando] = useState(false)
+  // Falha ao finalizar: { tipo: 'mudou' } (110/111) ou { tipo: 'outro', mensagem }.
+  const [erroCompra, setErroCompra] = useState(null)
 
   // Jogos do carrinho que ainda não foram consultados (ao abrir, ou vindos de outra aba).
   const faltando = itens.map((item) => item.idJogo).filter((id) => !(id in consultas))
@@ -52,6 +74,35 @@ export default function Carrinho() {
     setErroCarga('') // o efeito volta a buscar o que falta
   }
 
+  // C04: envia só { idJogo, quantidade }. Preço e total quem calcula é a API, com o preço do banco.
+  async function finalizarCompra() {
+    setEnviando(true)
+    setErroCompra(null)
+    setRemovido(null)
+    try {
+      const pedido = await pedidoApi.criar(itens.map(({ idJogo, quantidade }) => ({ idJogo, quantidade })))
+      limpar()
+      navigate('/meus-pedidos', {
+        state: { avisoGlobal: `Pedido nº ${pedido.id} realizado. Total: ${formatarPreco(pedido.total)}.` },
+      })
+    } catch (falha) {
+      setEnviando(false)
+      // 401: o interceptor avisa que a sessão acabou e a RotaProtegida leva ao
+      // Login com voltarPara=/carrinho; o carrinho continua no navegador.
+      if (falha?.response?.status === 401) return
+      const codigo = falha?.response?.data?.responseCode
+      if (codigo === JOGO_INDISPONIVEL || codigo === ESTOQUE_INSUFICIENTE) {
+        // Algo mudou desde que o jogo entrou no carrinho: busca tudo de novo
+        // para marcar, pelo nome, o que ficou indisponível ou com menos estoque.
+        setConsultas({})
+        setErroCompra({ tipo: 'mudou', mensagem: obterMensagemErro(falha) })
+      } else {
+        // Rede, servidor fora do ar ou erro inesperado: o mesmo carrinho pode ser reenviado.
+        setErroCompra({ tipo: 'outro', mensagem: obterMensagemErro(falha) })
+      }
+    }
+  }
+
   function removerItem(item, nome) {
     remover(item.idJogo)
     setRemovido({ ...item, nome })
@@ -71,6 +122,16 @@ export default function Carrinho() {
   const total = disponiveis.reduce((soma, linha) => soma + linha.jogo.preco * linha.item.quantidade, 0)
   const unidades = disponiveis.reduce((soma, linha) => soma + linha.item.quantidade, 0)
   const pendencias = linhas.length - disponiveis.length
+  const podeFinalizar = itens.length > 0 && pendencias === 0 && !enviando
+
+  // Mensagem da falha ao finalizar. Em 110/111, nomeia os itens que mudaram; se,
+  // ao recarregar, nada mudou (o estoque voltou), pede para tentar de novo.
+  let mensagemCompra = ''
+  if (erroCompra?.tipo === 'mudou' && !carregando) {
+    mensagemCompra = descreverPendencias(linhas) || `${erroCompra.mensagem} Confira o carrinho e tente de novo.`
+  } else if (erroCompra?.tipo === 'outro') {
+    mensagemCompra = erroCompra.mensagem
+  }
 
   return (
     <section>
@@ -98,6 +159,11 @@ export default function Carrinho() {
 
       {carregando && <Carregando texto="Carregando o carrinho..." />}
       <MensagemErro mensagem={erroCarga} aoTentarNovamente={tentarNovamente} />
+      {/* Em 110/111 o cliente ajusta o carrinho; nas outras falhas, pode reenviar o mesmo pedido. */}
+      <MensagemErro
+        mensagem={mensagemCompra}
+        aoTentarNovamente={erroCompra?.tipo === 'outro' && podeFinalizar ? finalizarCompra : undefined}
+      />
 
       {itens.length > 0 && !carregando && !erroCarga && (
         <div className="row g-4 align-items-start">
@@ -117,7 +183,16 @@ export default function Carrinho() {
           </div>
           <aside className="col-12 col-lg-4" aria-labelledby="titulo-resumo">
             <div className="painel resumo p-4">
-              <h2 id="titulo-resumo" className="h4 mb-3">Resumo</h2>
+              <h2 id="titulo-resumo" className="h4 mb-3">Resumo do pedido</h2>
+              {/* O que vai ser comprado, à vista antes de confirmar (heurística 6). */}
+              <ul className="list-unstyled resumo-itens mb-3">
+                {disponiveis.map(({ item, jogo }) => (
+                  <li key={item.idJogo}>
+                    <span>{item.quantidade} × {jogo.nome}</span>
+                    <span>{formatarPreco(jogo.preco * item.quantidade)}</span>
+                  </li>
+                ))}
+              </ul>
               <dl className="resumo-linhas mb-3">
                 <dt>Itens</dt>
                 <dd>{unidades} {unidades === 1 ? 'unidade' : 'unidades'}</dd>
@@ -125,11 +200,24 @@ export default function Carrinho() {
                 <dd className="resumo-total">{formatarPreco(total)}</dd>
               </dl>
               {pendencias > 0 && (
-                <p className="aviso-pendencia mb-0">
+                <p id="aviso-pendencia" className="aviso-pendencia">
                   {pendencias === 1 ? '1 item precisa' : `${pendencias} itens precisam`} de ajuste antes da compra.
                   O total não inclui {pendencias === 1 ? 'esse item' : 'esses itens'}.
                 </p>
               )}
+              {/* Desabilitado durante o envio (evita pedido duplo) e enquanto houver item a ajustar. */}
+              <button
+                type="button"
+                className="btn btn-primary btn-lg w-100"
+                onClick={finalizarCompra}
+                disabled={!podeFinalizar}
+                aria-describedby={pendencias > 0 ? 'aviso-pendencia' : undefined}
+              >
+                {enviando ? 'Finalizando...' : 'Finalizar compra'}
+              </button>
+              <p className="small text-body-secondary mt-2 mb-0">
+                O pedido começa como Pendente. Os preços são os da loja no momento da compra.
+              </p>
             </div>
           </aside>
         </div>

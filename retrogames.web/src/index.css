@@ -728,6 +728,20 @@ h1, h2, h3, .h1, .h2, .h3, .h4, .h5, .titulo {
   }
 }
 
+.resumo-itens li {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.35rem 0;
+  border-bottom: 1px solid #d9d7d0;
+  overflow-wrap: anywhere;
+}
+
+.resumo-itens li span:last-child {
+  white-space: nowrap;
+  font-weight: 700;
+}
+
 .resumo-linhas {
   display: grid;
   grid-template-columns: 1fr auto;
