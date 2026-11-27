@@ -7,6 +7,8 @@ export const autenticacaoApi = {
   entrar: (email, senha) => api.post('/Autenticacao/login', { email, senha }).then(dados),
   sair: () => api.post('/Autenticacao/logout').then(dados),
   usuarioAtual: () => api.get('/Autenticacao/eu').then(dados),
+  // C01: cria a conta de cliente; a API já inicia a sessão (cookie) e devolve o mesmo modelo do "eu".
+  cadastrar: (nome, email, senha) => api.post('/Autenticacao/cadastrar', { nome, email, senha }).then(dados),
 }
 
 export const jogoApi = {
@@ -30,4 +32,11 @@ export const generoApi = {
 
 export const condicaoJogoApi = {
   listar: () => api.get('/CondicaoJogo').then(dados),
+}
+
+// Módulo de Compras. O corpo do pedido leva só idJogo e quantidade:
+// o preço vem sempre do banco, nunca do front (C04).
+export const pedidoApi = {
+  criar: (itens) => api.post('/Pedido', { itens }).then(dados),
+  listarMeus: () => api.get('/Pedido/meus').then(dados),
 }

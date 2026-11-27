@@ -30,6 +30,13 @@ export default function AutenticacaoProvider({ children }) {
     return usuarioLogado
   }
 
+  // C01: a API cria a conta e já inicia a sessão; o menu muda sem F5.
+  async function cadastrar(nome, email, senha) {
+    const usuarioNovo = await autenticacaoApi.cadastrar(nome, email, senha)
+    setUsuario(usuarioNovo)
+    return usuarioNovo
+  }
+
   async function sair() {
     try {
       await autenticacaoApi.sair()
@@ -44,6 +51,7 @@ export default function AutenticacaoProvider({ children }) {
     estaAutenticado: usuario !== null,
     ehAdministrador: usuario?.perfil === 'Administrador',
     entrar,
+    cadastrar,
     sair,
   }
 
