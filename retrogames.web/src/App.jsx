@@ -4,6 +4,7 @@ import RotaProtegida from './components/RotaProtegida'
 import FormularioJogo from './pages/Administracao/FormularioJogo'
 import Jogos from './pages/Administracao/Jogos'
 import Plataforma from './pages/Auxiliares/Plataforma'
+import Cadastro from './pages/Cadastro/Cadastro'
 import Catalogo from './pages/Catalogo/Catalogo'
 import DetalheJogo from './pages/Catalogo/DetalheJogo'
 import Login from './pages/Login/Login'
@@ -18,6 +19,7 @@ export default function App() {
         <Route index element={<Catalogo />} />
         <Route path="jogos/:id" element={<DetalheJogo />} />
         <Route path="login" element={<Login />} />
+        <Route path="cadastro" element={<Cadastro />} />
 
         {/* Rotas restritas ao Administrador */}
         <Route path="admin" element={<RotaProtegida somenteAdministrador />}>

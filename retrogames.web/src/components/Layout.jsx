@@ -1,5 +1,5 @@
-import { useState } from 'react'
-import { Link, NavLink, Outlet, useNavigate } from 'react-router-dom'
+import { useEffect, useState } from 'react'
+import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { useAutenticacao } from '../hooks/useAutenticacao'
 
 export default function Layout() {
@@ -9,6 +9,22 @@ export default function Layout() {
   const fecharMenu = () => setMenuAberto(false)
   const { usuario, carregando, estaAutenticado, ehAdministrador, sair } = useAutenticacao()
   const navigate = useNavigate()
+  const local = useLocation()
+
+  // Aviso de sucesso deixado por outra tela ao navegar (cadastro, pedido realizado):
+  // navigate(destino, { state: { avisoGlobal: '...' } }). Vale só para a página de destino.
+  const avisoRecebido = local.state?.avisoGlobal
+  const [aviso, setAviso] = useState(null) // { texto, caminho }
+  if (avisoRecebido && avisoRecebido !== aviso?.texto) {
+    setAviso({ texto: avisoRecebido, caminho: local.pathname })
+  } else if (aviso && aviso.caminho !== local.pathname) {
+    setAviso(null) // saiu da página: o aviso não acompanha
+  }
+
+  // O aviso foi lido: apaga-o do histórico para não reaparecer no F5.
+  useEffect(() => {
+    if (local.state?.avisoGlobal) navigate(local.pathname + local.search, { replace: true, state: null })
+  }, [local, navigate])
 
   async function sairDaLoja() {
     fecharMenu()
@@ -80,6 +96,18 @@ export default function Layout() {
       </header>
 
       <main id="conteudo" className="container flex-grow-1 py-4 py-md-5" tabIndex={-1}>
+        {/* A região "status" existe sempre: o leitor de tela anuncia o texto quando ele entra. */}
+        <div role="status" aria-live="polite">
+          {aviso && (
+            <div className="estado estado-sucesso flex-wrap">
+              <span className="estado-icone" aria-hidden="true">✓</span>
+              <span className="me-auto fw-semibold">{aviso.texto}</span>
+              <button type="button" className="btn btn-outline-primary" onClick={() => setAviso(null)}>
+                Fechar aviso
+              </button>
+            </div>
+          )}
+        </div>
         <Outlet />
       </main>
 

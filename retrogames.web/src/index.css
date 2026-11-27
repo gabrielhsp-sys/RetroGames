@@ -709,3 +709,10 @@ h1, h2, h3, .h1, .h2, .h3, .h4, .h5, .titulo {
 .link-voltar {
   min-height: 44px;
 }
+
+/* Link de texto solto (Criar conta, Já tenho conta): mesma área de toque dos botões. */
+.link-toque {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+}

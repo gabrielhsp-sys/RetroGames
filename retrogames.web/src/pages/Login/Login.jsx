@@ -1,13 +1,9 @@
 import { useState } from 'react'
-import { useNavigate, useSearchParams } from 'react-router-dom'
+import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { obterMensagemErro } from '../../api/erros'
 import { MensagemErro } from '../../components/MensagensEstado'
 import { useAutenticacao } from '../../hooks/useAutenticacao'
-
-// Só aceita destino interno ("/admin/jogos"), nunca outro site ("//exemplo.com").
-function destinoSeguro(voltarPara) {
-  return voltarPara && voltarPara.startsWith('/') && !voltarPara.startsWith('//') ? voltarPara : '/'
-}
+import { comVoltarPara, destinoSeguro } from '../../lib/destino'
 
 export default function Login() {
   const { entrar } = useAutenticacao()
@@ -87,6 +83,14 @@ export default function Login() {
             {enviando ? 'Entrando...' : 'Entrar'}
           </button>
         </form>
+
+        {/* C01: quem ainda não tem conta cria uma e volta para onde estava. */}
+        <p className="mt-3 mb-0 text-center">
+          Ainda não tem conta?{' '}
+          <Link to={comVoltarPara('/cadastro', parametros.get('voltarPara'))} className="fw-semibold link-toque">
+            Criar conta
+          </Link>
+        </p>
       </div>
     </section>
   )
