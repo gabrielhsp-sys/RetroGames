@@ -211,6 +211,29 @@ h1, h2, h3, .h1, .h2, .h3, .h4, .h5, .titulo {
   align-items: center;
 }
 
+/* Contador do carrinho: rótulo claro com tinta (15,16:1), nunca o laranja do preço. */
+.carrinho-link {
+  gap: 0.5rem;
+}
+
+.contador {
+  min-width: 1.6rem;
+  padding: 0.05rem 0.45rem;
+  border-radius: 999px;
+  background: var(--rotulo);
+  color: var(--tinta);
+  font-weight: 800;
+  font-size: 0.9rem;
+  line-height: 1.4;
+  text-align: center;
+}
+
+.barra .btn-barra:hover .contador,
+.barra .btn-barra.active .contador {
+  background: var(--tinta);
+  color: var(--rotulo);
+}
+
 .barra .btn-barra.active {
   background: var(--rotulo);
   color: var(--tinta);

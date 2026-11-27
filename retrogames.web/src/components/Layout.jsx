@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { useAutenticacao } from '../hooks/useAutenticacao'
+import { useCarrinho } from '../hooks/useCarrinho'
 
 export default function Layout() {
   // Menu recolhido no celular: o React controla a classe "show" do Bootstrap,
@@ -8,6 +9,7 @@ export default function Layout() {
   const [menuAberto, setMenuAberto] = useState(false)
   const fecharMenu = () => setMenuAberto(false)
   const { usuario, carregando, estaAutenticado, ehAdministrador, sair } = useAutenticacao()
+  const { contador } = useCarrinho()
   const navigate = useNavigate()
   const local = useLocation()
 
@@ -59,6 +61,12 @@ export default function Layout() {
                 <li className="nav-item">
                   <NavLink className="nav-link" to="/" end onClick={fecharMenu}>Catálogo</NavLink>
                 </li>
+                {/* C02: quem está logado (cliente ou administrador) vê os próprios pedidos. */}
+                {estaAutenticado && (
+                  <li className="nav-item">
+                    <NavLink className="nav-link" to="/meus-pedidos" onClick={fecharMenu}>Meus pedidos</NavLink>
+                  </li>
+                )}
                 {/* Menu Administração: só para o administrador. A API protege de verdade (RS03). */}
                 {ehAdministrador && (
                   <li className="nav-item dropdown">
@@ -77,19 +85,27 @@ export default function Layout() {
                   </li>
                 )}
               </ul>
-              {/* Enquanto o "eu" não responde, não mostra Entrar nem Sair (evita piscar). */}
-              {!carregando && (
-                <div className="d-flex flex-wrap align-items-center gap-2 py-2 py-md-0">
-                  {estaAutenticado ? (
-                    <>
-                      <span className="text-light">Olá, {usuario.nome}</span>
-                      <button type="button" className="btn btn-barra" onClick={sairDaLoja}>Sair</button>
-                    </>
-                  ) : (
-                    <NavLink className="btn btn-barra" to="/login" onClick={fecharMenu}>Entrar</NavLink>
-                  )}
-                </div>
-              )}
+              <div className="d-flex flex-wrap align-items-center gap-2 py-2 py-md-0">
+                {/* O carrinho é de todos: o visitante monta e entra só para finalizar (C03). */}
+                <NavLink
+                  className="btn btn-barra carrinho-link"
+                  to="/carrinho"
+                  onClick={fecharMenu}
+                  aria-label={`Carrinho, ${contador} ${contador === 1 ? 'item' : 'itens'}`}
+                >
+                  Carrinho
+                  <span className="contador" aria-hidden="true">{contador}</span>
+                </NavLink>
+                {/* Enquanto o "eu" não responde, não mostra Entrar nem Sair (evita piscar). */}
+                {!carregando && (estaAutenticado ? (
+                  <>
+                    <span className="text-light">Olá, {usuario.nome}</span>
+                    <button type="button" className="btn btn-barra" onClick={sairDaLoja}>Sair</button>
+                  </>
+                ) : (
+                  <NavLink className="btn btn-barra" to="/login" onClick={fecharMenu}>Entrar</NavLink>
+                ))}
+              </div>
             </div>
           </div>
         </nav>
