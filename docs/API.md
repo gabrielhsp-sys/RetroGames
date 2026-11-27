@@ -99,8 +99,8 @@ O Módulo de Compras não criou código novo neste catálogo.
 | 101 | 409 | `PLATAFORMA_NOME_DUPLICADO` | Já existe uma plataforma com este nome. | Espec. (RN01) |
 | 102 | 409 | `PLATAFORMA_POSSUI_JOGOS` | Não é possível excluir: existem jogos desta plataforma. | Espec. (RN02) |
 | 103 | 404 | `JOGO_NAO_ENCONTRADO` | Jogo não encontrado. | Espec. |
-| 104 | 404 | `CONDICAO_NAO_ENCONTRADA` | A condição informada não existe. | Espec. (RN05) |
-| 105 | 404 | `GENERO_NAO_ENCONTRADO` | Um ou mais gêneros informados não existem. | Espec. (RN05); usado também em C08 |
+| 104 | 404 | `CONDICAO_NAO_ENCONTRADA` | Condição de jogo não encontrada. | Espec. (RN05) |
+| 105 | 404 | `GENERO_NAO_ENCONTRADO` | Gênero não encontrado. | Espec. (RN05); usado também em C08 |
 | 106 | 409 | `EMAIL_JA_CADASTRADO` | Já existe uma conta com este e-mail. | Desafio (C01) |
 | 107 | 409 | `GENERO_NOME_DUPLICADO` | Já existe um gênero com este nome. | Desafio (C08) |
 | 108 | 409 | `GENERO_POSSUI_JOGOS` | Não é possível excluir: existem jogos com este gênero. | Desafio (C08) |
@@ -110,4 +110,4 @@ O Módulo de Compras não criou código novo neste catálogo.
 | 112 | 404 | `SITUACAO_NAO_ENCONTRADA` | Situação de pedido não encontrada. | Desafio (C07) |
 | 113 | 403 | `PEDIDO_DE_OUTRO_USUARIO` | Você não tem acesso a este pedido. | Desafio (C06) |
 
-Os códigos 106 a 113 e as mensagens são os da tabela "Códigos de erro" do desafio, sem diferença de texto. Duas mensagens do código são diferentes da tabela 5.4 da especificação: 104 ("A condição informada não existe." no código; "Condição de jogo não encontrada." na Espec.) e 105 ("Um ou mais gêneros informados não existem." no código; "Gênero não encontrado." na Espec.). Esses textos estão no código desde o commit `1f0bba2` (aula 3), e o roteiro da aula 3 só traz os nomes das constantes, não as mensagens. O Módulo de Compras não os alterou. A diferença com a especificação continua em aberto (needs-verification em [USER_STORIES.md](USER_STORIES.md)).
+Os códigos 106 a 113 e as mensagens são os da tabela "Códigos de erro" do desafio, sem diferença de texto. As mensagens de 100 a 105 são as da tabela 5.4 da especificação, também sem diferença de texto.

@@ -28,11 +28,11 @@ public static class BusinessErrors
 
     /// <summary>Condição do jogo não existe (RN05).</summary>
     public static readonly (int Code, string DefaultMessage, HttpStatusCode Status) CONDICAO_NAO_ENCONTRADA =
-        (104, "A condição informada não existe.", HttpStatusCode.NotFound);
+        (104, "Condição de jogo não encontrada.", HttpStatusCode.NotFound);
 
     /// <summary>Gênero do jogo não existe (RN05).</summary>
     public static readonly (int Code, string DefaultMessage, HttpStatusCode Status) GENERO_NAO_ENCONTRADO =
-        (105, "Um ou mais gêneros informados não existem.", HttpStatusCode.NotFound);
+        (105, "Gênero não encontrado.", HttpStatusCode.NotFound);
 
     // Módulo de Compras (desafio): códigos 106 a 113, todos aqui para o grupo usar um só catálogo.
     // A versão básica (C01, C04, C05) usa 106, 110 e 111.
