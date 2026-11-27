@@ -28,13 +28,13 @@ O quadro foi montado em 27/11/2026. O trabalho feito antes disso não tem histó
 | C05 | Meus pedidos | Concluído | Gabriel | `df42b7c`, `df3cbff` |
 | C06 | Detalhe do pedido | Concluído | Gabriel | `4ce88fc`, `62f9b12`, `908d815`, `603a6d3` |
 | C07 | Gestão de pedidos | Concluído | Gabriel | `4ce88fc`, `51ec209`, `827f112`, `603a6d3` |
-| C08 | Manutenção de gêneros | A fazer | pendente do grupo | `4ce88fc` (só os códigos de erro) |
+| C08 | Manutenção de gêneros | Concluído | Gabriel | `4ce88fc`, `db52e7e`, `5a1dc51`, `c464c92` |
 
-Os commits `704fdc5`, `5297081` e `603a6d3` (prefixo `style:`) ajustam a responsividade e a acessibilidade das telas de compra e de pedidos; não citam história no título e aparecem aqui nas histórias cujas telas alteram.
+Os commits `704fdc5`, `5297081` e `603a6d3` (prefixo `style:`) ajustam a responsividade e a acessibilidade das telas de compra e de pedidos; não citam história no título e aparecem aqui nas histórias cujas telas alteram. O `d96877c` (`style:`) leva à tela de Plataformas, que não é do módulo de Compras, as mesmas correções de rolagem e foco feitas na de gêneros em `c464c92`.
 
 ### Critério para marcar uma tarefa como feita
 
-Uma tarefa só tem `[x]` quando um commit da sprint criou ou alterou o arquivo que a implementa e o arquivo existe hoje no `main`. Em 27/11/2026, depois de C06 e C07, `dotnet test` passou com 59 testes e 0 falhas, e `npm run build` do `retrogames.web` terminou sem erro. Tarefas sem commit ficam `[ ]`.
+Uma tarefa só tem `[x]` quando um commit da sprint criou ou alterou o arquivo que a implementa e o arquivo existe hoje no `main`. Em 27/11/2026, depois de C08, `dotnet test` passou com 69 testes e 0 falhas, e `npm run build` do `retrogames.web` terminou sem erro. Tarefas sem commit ficam `[ ]`.
 
 ---
 
@@ -221,16 +221,16 @@ As tabelas já existem (C04, `909429c`).
 **Tarefas:**
 
 - [x] Erros 107 e 108 em `BusinessErrors` (`4ce88fc`).
-- [ ] Repository: obter por id, inserir, alterar e excluir em `GeneroRepository` (gravações com `ExecutarGravacaoAsync`); verificar jogos do gênero em `JogoGeneroRepository`.
-- [ ] Service: `GeneroService` com 107, 108 e `GENERO_NAO_ENCONTRADO`.
-- [ ] Validator e ApiModels de inclusão e alteração de gênero.
-- [ ] Testes: Service de gêneros (exigido na versão completa).
-- [ ] Endpoints: `GET /api/Genero/{id}` público; `POST`, `PUT` e `DELETE` com `[Authorize(Policy = Politicas.Administrador)]`.
-- [ ] Tela: `/admin/generos`, no menu Administração.
+- [x] Repository: `GeneroRepository.BuscarPorIdAsync`, `ExisteComNomeAsync`, `InserirAsync`, `AlterarAsync` e `ExcluirAsync` (gravações com `ExecutarGravacaoAsync`); `JogoGeneroRepository.ExisteComGeneroAsync` verifica os jogos do gênero na tabela de vínculo. Consultas em `database/08-consultas-generos.sql` (`db52e7e`).
+- [x] Service: `GeneroService` com 107 (conferido antes e na `RegistroDuplicadoException`), 108 e 105 (`GENERO_NAO_ENCONTRADO`) (`db52e7e`).
+- [x] Validator e ApiModels: `InserirGeneroRequestApiModel`, `AlterarGeneroRequestApiModel` e seus validators (nome obrigatório, até 50 caracteres) (`db52e7e`).
+- [x] Testes: `GeneroServiceTests`, 11 testes (lista, 105, 107 na inclusão e na alteração, 108 e exclusão) (`db52e7e`).
+- [x] Endpoints: `GET /api/Genero/{id}` público; `POST`, `PUT` e `DELETE` com `[Authorize(Policy = Politicas.Administrador)]` (`db52e7e`).
+- [x] Tela: `/admin/generos` com inclusão, alteração e exclusão (com confirmação), e item "Gêneros" no menu Administração (`5a1dc51`; ajustes de rolagem e foco em `c464c92`).
 
 A tabela `tb_genero` já existe (aula 1).
 
-**Commits:** `4ce88fc` (só os códigos de erro).
+**Commits:** `4ce88fc` (códigos de erro), `db52e7e`, `5a1dc51` e `c464c92`.
 
 ---
 
@@ -242,13 +242,11 @@ Situação em 27/11/2026, dois dias antes da entrega.
 
 - Versão básica completa: C01 a C05, com back-end, testes e telas. Responsável: Gabriel.
 - Banco do módulo (`database/05-compras.sql` e `06-consultas-compras.sql`) e todos os códigos de erro 106 a 113 no catálogo `BusinessErrors`, inclusive os da versão completa.
-- C06 e C07: back-end, testes e telas. Responsável: Gabriel.
-- 59 testes unitários passando (`dotnet test`, 27/11/2026) e build do front sem erro.
+- C06, C07 e C08: back-end, testes e telas. Responsável: Gabriel.
+- 69 testes unitários passando (`dotnet test`, 27/11/2026) e build do front sem erro.
 
 **Ainda não pronto:**
 
-- C08 (manutenção de gêneros): nenhum endpoint, Service, teste ou tela foi feito.
-- Motivo: a divisão dessa história entre os membros do grupo ainda não foi confirmada; o responsável fica pendente até o grupo decidir.
 - Decisões em aberto de C07, para o grupo e o professor: o desafio não define regra de transição entre situações (hoje qualquer troca é aceita) nem devolução de estoque ao cancelar (hoje o estoque não volta). A lista do administrador não tem paginação.
 - Fora das histórias, o desafio também pede a atualização da especificação do repositório (endpoints, tabelas, regras e rastreabilidade, seção 7.1); nenhum arquivo versionado tem ainda essa rastreabilidade das histórias C01 a C08.
 
