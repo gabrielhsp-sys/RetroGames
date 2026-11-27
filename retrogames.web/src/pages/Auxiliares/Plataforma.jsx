@@ -18,6 +18,10 @@ export default function Plataforma() {
   const [salvando, setSalvando] = useState(false)
   const [aviso, setAviso] = useState('')
   const campoNome = useRef(null)
+  // Áreas que recebem o foco depois de excluir: no celular a mensagem fica
+  // longe do botão clicado, e a linha excluída some com o foco.
+  const areaAviso = useRef(null)
+  const areaErroLista = useRef(null)
 
   const carregarPlataformas = useCallback(() => {
     setCarregando(true)
@@ -92,11 +96,18 @@ export default function Plataforma() {
       await plataformaApi.excluir(plataforma.id)
       if (emEdicao?.id === plataforma.id) limparFormulario()
       setAviso(`Plataforma "${plataforma.nome}" excluída.`)
+      focarDepois(areaAviso)
       carregarPlataformas()
     } catch (falha) {
       // 409, código 102: a plataforma tem jogos e continua na lista.
       setErroLista(obterMensagemErro(falha))
+      focarDepois(areaErroLista)
     }
+  }
+
+  // Leva o foco (e a rolagem) até a mensagem depois que a tela atualizar.
+  function focarDepois(area) {
+    requestAnimationFrame(() => area.current?.focus())
   }
 
   // Classe e descrição de erro de um campo (is-invalid do Bootstrap).
@@ -130,17 +141,19 @@ export default function Plataforma() {
       <h1 className="titulo-pagina">Plataformas</h1>
       <p className="subtitulo-pagina">Consoles e computadores em que os jogos da loja rodam.</p>
 
-      {aviso && (
-        <div role="status" className="estado estado-sucesso">
-          <span className="estado-icone" aria-hidden="true">✓</span>
-          <span className="fw-semibold">{aviso}</span>
-        </div>
-      )}
+      <div ref={areaAviso} tabIndex={-1}>
+        {aviso && (
+          <div role="status" className="estado estado-sucesso">
+            <span className="estado-icone" aria-hidden="true">✓</span>
+            <span className="fw-semibold text-break">{aviso}</span>
+          </div>
+        )}
+      </div>
 
       <div className="row g-4">
         <div className="col-12 col-lg-4">
           <form className="painel p-4" onSubmit={salvar} noValidate>
-            <h2 className="h5 mb-3">
+            <h2 className="h5 mb-3 text-break">
               {emEdicao ? `Alterar: ${emEdicao.nome}` : 'Nova plataforma'}
             </h2>
 
@@ -204,10 +217,12 @@ export default function Plataforma() {
 
         <div className="col-12 col-lg-8">
           {carregando && <Carregando texto="Carregando plataformas..." />}
-          <MensagemErro
-            mensagem={erroLista}
-            aoTentarNovamente={plataformas.length === 0 ? carregarPlataformas : undefined}
-          />
+          <div ref={areaErroLista} tabIndex={-1}>
+            <MensagemErro
+              mensagem={erroLista}
+              aoTentarNovamente={plataformas.length === 0 ? carregarPlataformas : undefined}
+            />
+          </div>
 
           {!carregando && plataformas.length === 0 && !erroLista && (
             <EstadoVazio titulo="Nenhuma plataforma cadastrada.">
@@ -231,7 +246,7 @@ export default function Plataforma() {
                   {plataformas.map((plataforma) => (
                     <tr key={plataforma.id} className={emEdicao?.id === plataforma.id ? 'linha-em-edicao' : ''}>
                       <td>
-                        <span className="fw-semibold">{plataforma.nome}</span>
+                        <span className="fw-semibold text-break">{plataforma.nome}</span>
                         <span className="d-block d-sm-none small">{plataforma.fabricante}</span>
                         <div className="d-flex d-md-none flex-wrap gap-2 mt-2">{acoes(plataforma)}</div>
                       </td>
