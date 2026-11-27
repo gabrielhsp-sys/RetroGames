@@ -252,6 +252,12 @@ function LinhaCarrinho({ item, jogo, situacao, aoMudarQuantidade, aoRemover }) {
   }
 
   const precisaAjuste = situacao.tipo !== 'ok'
+
+  // O botão "Ajustar" some depois do clique: o foco vai para a quantidade, não se perde.
+  function ajustar(quantidade) {
+    aoMudarQuantidade(quantidade)
+    window.requestAnimationFrame(() => document.getElementById(idQuantidade)?.focus())
+  }
   // As opções vão de 1 ao limite (heurística 5); se a quantidade passou do
   // estoque, ela aparece marcada para o cliente ver o que precisa mudar.
   const opcoes = Array.from({ length: situacao.limite ?? 0 }, (_, i) => i + 1)
@@ -273,7 +279,7 @@ function LinhaCarrinho({ item, jogo, situacao, aoMudarQuantidade, aoRemover }) {
         {situacao.tipo === 'acimaDoEstoque' && (
           <p id={idAviso} className="linha-aviso mb-0 mt-2">
             Estoque insuficiente para {jogo.nome}: {situacao.limite === 1 ? 'resta 1' : `restam ${situacao.limite}`}.{' '}
-            <button type="button" className="btn btn-link p-0 align-baseline fw-bold" onClick={() => aoMudarQuantidade(situacao.limite)}>
+            <button type="button" className="btn btn-link p-0 align-baseline fw-bold" onClick={() => ajustar(situacao.limite)}>
               Ajustar para {situacao.limite}
             </button>
           </p>

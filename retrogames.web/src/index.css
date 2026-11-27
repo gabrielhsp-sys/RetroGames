@@ -188,6 +188,15 @@ h1, h2, h3, .h1, .h2, .h3, .h4, .h5, .titulo {
   outline-color: var(--rotulo);
 }
 
+/* O Bootstrap troca o contorno do nav-link e do toggler por uma sombra roxa,
+   que some sobre a barra escura: aqui volta o contorno claro de 3px. */
+.barra .nav-link:focus-visible,
+.barra .navbar-toggler:focus-visible {
+  outline: 3px solid var(--rotulo);
+  outline-offset: 2px;
+  box-shadow: none;
+}
+
 .barra .navbar-toggler {
   border: 2px solid var(--rotulo);
   min-width: 44px;
@@ -215,6 +224,40 @@ h1, h2, h3, .h1, .h2, .h3, .h4, .h5, .titulo {
 /* Contador do carrinho: rótulo claro com tinta (15,16:1), nunca o laranja do preço. */
 .carrinho-link {
   gap: 0.5rem;
+}
+
+/* No celular, marca, Carrinho e menu cabem numa linha só, mesmo em 360px. */
+@media (max-width: 767.98px) {
+  .carrinho-link {
+    --bs-btn-padding-x: 0.5rem;
+    --bs-btn-font-size: 0.95rem;
+    gap: 0.3rem;
+  }
+
+  .carrinho-link .contador {
+    min-width: 1.4rem;
+    padding-inline: 0.3rem;
+  }
+
+  .barra .navbar-brand {
+    margin-right: 0;
+    gap: 0.45rem;
+  }
+
+  .barra .navbar-toggler {
+    padding-inline: 0.45rem;
+  }
+}
+
+@media (max-width: 399.98px) {
+  .marca-texto {
+    font-size: 1rem;
+  }
+
+  .barra .navbar-brand img {
+    width: 30px;
+    height: 30px;
+  }
 }
 
 .contador {
@@ -641,6 +684,9 @@ h1, h2, h3, .h1, .h2, .h3, .h4, .h5, .titulo {
 }
 
 .linha-nome a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px; /* área de toque confortável, mesmo com nome curto */
   color: var(--tinta);
   text-decoration-thickness: 2px;
   text-underline-offset: 3px;
@@ -746,7 +792,7 @@ h1, h2, h3, .h1, .h2, .h3, .h4, .h5, .titulo {
 .resumo-linhas {
   display: grid;
   grid-template-columns: 1fr auto;
-  gap: 0.35rem 1rem;
+  row-gap: 0.35rem; /* sem espaço entre colunas: a linha do total fica inteira */
   margin: 0;
 }
 
@@ -756,6 +802,7 @@ h1, h2, h3, .h1, .h2, .h3, .h4, .h5, .titulo {
 
 .resumo-linhas dd {
   margin: 0;
+  padding-left: 1rem;
   text-align: right;
   font-weight: 700;
 }

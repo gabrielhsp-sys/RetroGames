@@ -46,6 +46,8 @@ export default function Layout() {
               <img src="/favicon.svg" alt="" width="36" height="36" />
               <span className="marca-texto">RetroGames</span>
             </Link>
+            {/* No celular o carrinho fica fora do menu recolhido: o contador está sempre à vista. */}
+            <LinkCarrinho contador={contador} className="d-md-none ms-auto me-1" aoClicar={fecharMenu} />
             <button
               className="navbar-toggler"
               type="button"
@@ -87,15 +89,7 @@ export default function Layout() {
               </ul>
               <div className="d-flex flex-wrap align-items-center gap-2 py-2 py-md-0">
                 {/* O carrinho é de todos: o visitante monta e entra só para finalizar (C03). */}
-                <NavLink
-                  className="btn btn-barra carrinho-link"
-                  to="/carrinho"
-                  onClick={fecharMenu}
-                  aria-label={`Carrinho, ${contador} ${contador === 1 ? 'item' : 'itens'}`}
-                >
-                  Carrinho
-                  <span className="contador" aria-hidden="true">{contador}</span>
-                </NavLink>
+                <LinkCarrinho contador={contador} className="d-none d-md-inline-flex" aoClicar={fecharMenu} />
                 {/* Enquanto o "eu" não responde, não mostra Entrar nem Sair (evita piscar). */}
                 {!carregando && (estaAutenticado ? (
                   <>
@@ -134,5 +128,21 @@ export default function Layout() {
         </div>
       </footer>
     </div>
+  )
+}
+
+// Link do carrinho com o contador de unidades. O nome acessível diz o número
+// ("Carrinho, 2 itens"); o selo repete o número para quem enxerga.
+function LinkCarrinho({ contador, className, aoClicar }) {
+  return (
+    <NavLink
+      className={`btn btn-barra carrinho-link ${className}`}
+      to="/carrinho"
+      onClick={aoClicar}
+      aria-label={`Carrinho, ${contador} ${contador === 1 ? 'item' : 'itens'}`}
+    >
+      Carrinho
+      <span className="contador" aria-hidden="true">{contador}</span>
+    </NavLink>
   )
 }
