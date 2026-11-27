@@ -20,6 +20,10 @@ export default function Genero() {
   const [salvando, setSalvando] = useState(false)
   const [aviso, setAviso] = useState('')
   const campoNome = useRef(null)
+  // Áreas que recebem o foco depois de excluir: no celular a mensagem fica
+  // longe do botão clicado, e a linha excluída some com o foco.
+  const areaAviso = useRef(null)
+  const areaErroLista = useRef(null)
 
   const carregarGeneros = useCallback(() => {
     setCarregando(true)
@@ -89,11 +93,18 @@ export default function Genero() {
       await generoApi.excluir(genero.id)
       if (emEdicao?.id === genero.id) limparFormulario()
       setAviso(`Gênero "${genero.nome}" excluído.`)
+      focarDepois(areaAviso)
       carregarGeneros()
     } catch (falha) {
       // 409, código 108: o gênero tem jogos e continua na lista.
       setErroLista(obterMensagemErro(falha))
+      focarDepois(areaErroLista)
     }
+  }
+
+  // Leva o foco (e a rolagem) até a mensagem depois que a tela atualizar.
+  function focarDepois(area) {
+    requestAnimationFrame(() => area.current?.focus())
   }
 
   // Classe e descrição de erro de um campo (is-invalid do Bootstrap).
@@ -127,17 +138,19 @@ export default function Genero() {
       <h1 className="titulo-pagina">Gêneros</h1>
       <p className="subtitulo-pagina">Os tipos de jogo usados nos filtros do catálogo e no cadastro de jogos.</p>
 
-      {aviso && (
-        <div role="status" className="estado estado-sucesso">
-          <span className="estado-icone" aria-hidden="true">✓</span>
-          <span className="fw-semibold">{aviso}</span>
-        </div>
-      )}
+      <div ref={areaAviso} tabIndex={-1}>
+        {aviso && (
+          <div role="status" className="estado estado-sucesso">
+            <span className="estado-icone" aria-hidden="true">✓</span>
+            <span className="fw-semibold text-break">{aviso}</span>
+          </div>
+        )}
+      </div>
 
       <div className="row g-4">
         <div className="col-12 col-lg-4">
           <form className="painel p-4" onSubmit={salvar} noValidate>
-            <h2 className="h5 mb-3">
+            <h2 className="h5 mb-3 text-break">
               {emEdicao ? `Alterar: ${emEdicao.nome}` : 'Novo gênero'}
             </h2>
 
@@ -177,10 +190,12 @@ export default function Genero() {
 
         <div className="col-12 col-lg-8">
           {carregando && <Carregando texto="Carregando gêneros..." />}
-          <MensagemErro
-            mensagem={erroLista}
-            aoTentarNovamente={generos.length === 0 ? carregarGeneros : undefined}
-          />
+          <div ref={areaErroLista} tabIndex={-1}>
+            <MensagemErro
+              mensagem={erroLista}
+              aoTentarNovamente={generos.length === 0 ? carregarGeneros : undefined}
+            />
+          </div>
 
           {!carregando && generos.length === 0 && !erroLista && (
             <EstadoVazio titulo="Nenhum gênero cadastrado.">
@@ -202,7 +217,7 @@ export default function Genero() {
                   {generos.map((genero) => (
                     <tr key={genero.id} className={emEdicao?.id === genero.id ? 'linha-em-edicao' : ''}>
                       <td>
-                        <span className="fw-semibold">{genero.nome}</span>
+                        <span className="fw-semibold text-break">{genero.nome}</span>
                         <div className="d-flex d-md-none flex-wrap gap-2 mt-2">{acoes(genero)}</div>
                       </td>
                       <td className="text-end text-nowrap d-none d-md-table-cell">
