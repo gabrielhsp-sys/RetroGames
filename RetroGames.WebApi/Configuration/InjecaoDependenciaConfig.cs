@@ -42,6 +42,7 @@ public static class InjecaoDependenciaConfig
         services.AddScoped<IJogoService, JogoService>();
         services.AddScoped<IAutenticacaoService, AutenticacaoService>();
         services.AddScoped<IPedidoService, PedidoService>();
+        services.AddScoped<ISituacaoPedidoService, SituacaoPedidoService>();
 
         // Gera e confere o hash das senhas (PBKDF2 com sal). Não guarda estado: uma instância basta.
         services.AddSingleton<IPasswordHasher<Usuario>, PasswordHasher<Usuario>>();

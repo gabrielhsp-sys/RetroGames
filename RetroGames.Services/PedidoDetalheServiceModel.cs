@@ -14,6 +14,12 @@ public class PedidoDetalheServiceModel
     /// <summary>Descrição da situação do pedido (tb_situacao_pedido).</summary>
     public string DescricaoSituacao { get; set; } = string.Empty;
 
+    /// <summary>
+    /// Nome do cliente dono do pedido (tb_usuario). Só a gestão de pedidos (C07) preenche;
+    /// nas demais consultas fica vazio.
+    /// </summary>
+    public string NomeUsuario { get; set; } = string.Empty;
+
     /// <summary>Itens do pedido (tb_item_pedido), com o nome do jogo (tb_jogo).</summary>
     public List<ItemPedidoDetalheServiceModel> Itens { get; set; } = new();
 }

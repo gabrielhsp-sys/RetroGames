@@ -1,3 +1,4 @@
+using RetroGames.Model.Filtros;
 using RetroGames.Model.Model;
 using RetroGames.Services;
 using RetroGames.WebApi.ApiModels;
@@ -14,6 +15,28 @@ public static class PedidoMapper
             IdJogo = item.IdJogo,
             Quantidade = item.Quantidade,
         }).ToList();
+
+    /// <summary>Query string de GET /api/Pedido → filtro do Service e do Repository.</summary>
+    public static FiltroPedido ParaFiltro(this ListarPedidoRequestApiModel request) => new()
+    {
+        IdSituacaoPedido = request.IdSituacao,
+    };
+
+    /// <summary>Um pedido da gestão (C07) → ApiModel de saída com o nome do cliente.</summary>
+    public static ListarTodosPedidoResponseApiModel ParaListarTodosResponse(this PedidoDetalheServiceModel detalhe)
+    {
+        var pedido = detalhe.ParaResponse();
+        return new ListarTodosPedidoResponseApiModel
+        {
+            Id = pedido.Id,
+            Data = pedido.Data,
+            Total = pedido.Total,
+            IdSituacaoPedido = pedido.IdSituacaoPedido,
+            DescricaoSituacao = pedido.DescricaoSituacao,
+            Itens = pedido.Itens,
+            NomeUsuario = detalhe.NomeUsuario,
+        };
+    }
 
     /// <summary>Um pedido já combinado pelo PedidoService → ApiModel de saída.</summary>
     public static ListarPedidoResponseApiModel ParaResponse(this PedidoDetalheServiceModel detalhe) => new()

@@ -1,5 +1,6 @@
 using Moq;
 using RetroGames.Model.Constantes;
+using RetroGames.Model.Filtros;
 using RetroGames.Model.Model;
 using RetroGames.Repository;
 using RetroGames.Services;
@@ -19,6 +20,7 @@ public class PedidoServiceTests
     private readonly Mock<IPedidoRepository> pedidoRepository = new();
     private readonly Mock<IItemPedidoRepository> itemPedidoRepository = new();
     private readonly Mock<ISituacaoPedidoRepository> situacaoPedidoRepository = new();
+    private readonly Mock<IUsuarioRepository> usuarioRepository = new();
     private readonly Mock<IRepositorySet> repositorio = new();
     private readonly Mock<IUsuarioAtualService> usuarioAtual = new();
 
@@ -28,6 +30,7 @@ public class PedidoServiceTests
         repositorio.Setup(r => r.Pedido).Returns(pedidoRepository.Object);
         repositorio.Setup(r => r.ItemPedido).Returns(itemPedidoRepository.Object);
         repositorio.Setup(r => r.SituacaoPedido).Returns(situacaoPedidoRepository.Object);
+        repositorio.Setup(r => r.Usuario).Returns(usuarioRepository.Object);
         usuarioAtual.Setup(u => u.Id).Returns(IdUsuarioLogado);
         situacaoPedidoRepository.Setup(r => r.ListarAsync()).ReturnsAsync(new List<SituacaoPedido>
         {
@@ -392,5 +395,121 @@ public class PedidoServiceTests
 
         // Assert
         Assert.Equal(BusinessErrors.PEDIDO_NAO_ENCONTRADO, excecao.Erro);
+    }
+
+    /// <summary>Dois pedidos de clientes diferentes, com os itens e os clientes no banco.</summary>
+    private void PedidosDeDoisClientesNoBanco()
+    {
+        pedidoRepository.Setup(r => r.ListarAsync(It.IsAny<FiltroPedido>())).ReturnsAsync(new List<Pedido>
+        {
+            new() { Id = 31, IdUsuario = 7, IdSituacaoPedido = SituacaoPedidoIds.Pago },
+            new() { Id = 30, IdUsuario = 8, IdSituacaoPedido = SituacaoPedidoIds.Pendente },
+        });
+        itemPedidoRepository.Setup(r => r.ListarPorPedidosAsync(It.IsAny<List<int>>())).ReturnsAsync(new List<ItemPedido>
+        {
+            new() { Id = 1, IdPedido = 30, IdJogo = 1, Quantidade = 1, ValorUnitario = 100.00m },
+            new() { Id = 2, IdPedido = 31, IdJogo = 1, Quantidade = 2, ValorUnitario = 100.00m },
+        });
+        JogosNoBanco(CriarJogo(1, 100.00m, 5));
+        usuarioRepository.Setup(r => r.ListarPorIdsAsync(It.IsAny<List<int>>())).ReturnsAsync(new List<Usuario>
+        {
+            new() { Id = 7, Nome = "Ana" },
+            new() { Id = 8, Nome = "Bruno" },
+        });
+    }
+
+    [Fact]
+    public async Task Listar_SemFiltro_DevolveTodosOsPedidosComONomeDoCliente()
+    {
+        // Arrange
+        PedidosDeDoisClientesNoBanco();
+        var service = CriarService();
+
+        // Act
+        var pedidos = await service.ListarAsync(new FiltroPedido());
+
+        // Assert: o Repository recebe o filtro sem situação e a ordem dele é mantida.
+        pedidoRepository.Verify(r => r.ListarAsync(It.Is<FiltroPedido>(f => f.IdSituacaoPedido == null)), Times.Once);
+        Assert.Equal(new[] { 31, 30 }, pedidos.Select(pedido => pedido.Pedido.Id));
+        Assert.Equal(new[] { "Ana", "Bruno" }, pedidos.Select(pedido => pedido.NomeUsuario));
+        Assert.Equal(2, pedidos.Single(pedido => pedido.Pedido.Id == 31).Itens.Single().Item.Quantidade);
+    }
+
+    [Fact]
+    public async Task Listar_FiltroPorSituacao_RepassaASituacaoAoRepository()
+    {
+        // Arrange
+        PedidosDeDoisClientesNoBanco();
+        var service = CriarService();
+
+        // Act
+        await service.ListarAsync(new FiltroPedido { IdSituacaoPedido = SituacaoPedidoIds.Pago });
+
+        // Assert
+        pedidoRepository.Verify(r => r.ListarAsync(
+            It.Is<FiltroPedido>(f => f.IdSituacaoPedido == SituacaoPedidoIds.Pago)), Times.Once);
+    }
+
+    [Fact]
+    public async Task Listar_FiltroComSituacaoInexistente_LancaSituacaoNaoEncontradaSemListar()
+    {
+        // Arrange
+        var service = CriarService();
+
+        // Act
+        var excecao = await Assert.ThrowsAsync<BusinessRuleException>(
+            () => service.ListarAsync(new FiltroPedido { IdSituacaoPedido = 99 }));
+
+        // Assert
+        Assert.Equal(BusinessErrors.SITUACAO_NAO_ENCONTRADA, excecao.Erro);
+        pedidoRepository.Verify(r => r.ListarAsync(It.IsAny<FiltroPedido>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task AlterarSituacao_PedidoESituacaoExistentes_GravaEDevolveOPedidoAtualizado()
+    {
+        // Arrange: o pedido 20 está Pendente e passa a Pago.
+        PedidoNoBanco(idDono: 99);
+        pedidoRepository.Setup(r => r.AlterarSituacaoAsync(It.IsAny<int>(), It.IsAny<int>())).ReturnsAsync(true);
+        var service = CriarService();
+
+        // Act
+        var atualizado = await service.AlterarSituacaoAsync(20, SituacaoPedidoIds.Pago);
+
+        // Assert
+        pedidoRepository.Verify(r => r.AlterarSituacaoAsync(20, SituacaoPedidoIds.Pago), Times.Once);
+        Assert.Equal(SituacaoPedidoIds.Pago, atualizado.Pedido.IdSituacaoPedido);
+        Assert.Equal("Pago", atualizado.DescricaoSituacao);
+        Assert.Single(atualizado.Itens);
+    }
+
+    [Fact]
+    public async Task AlterarSituacao_PedidoInexistente_LancaPedidoNaoEncontradoSemGravar()
+    {
+        // Arrange: situação também inexistente, para provar que o pedido é conferido primeiro.
+        pedidoRepository.Setup(r => r.BuscarPorIdAsync(It.IsAny<int>())).ReturnsAsync((Pedido?)null);
+        var service = CriarService();
+
+        // Act
+        var excecao = await Assert.ThrowsAsync<BusinessRuleException>(() => service.AlterarSituacaoAsync(999, 99));
+
+        // Assert
+        Assert.Equal(BusinessErrors.PEDIDO_NAO_ENCONTRADO, excecao.Erro);
+        pedidoRepository.Verify(r => r.AlterarSituacaoAsync(It.IsAny<int>(), It.IsAny<int>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task AlterarSituacao_SituacaoInexistente_LancaSituacaoNaoEncontradaSemGravar()
+    {
+        // Arrange
+        PedidoNoBanco(idDono: 99);
+        var service = CriarService();
+
+        // Act
+        var excecao = await Assert.ThrowsAsync<BusinessRuleException>(() => service.AlterarSituacaoAsync(20, 99));
+
+        // Assert
+        Assert.Equal(BusinessErrors.SITUACAO_NAO_ENCONTRADA, excecao.Erro);
+        pedidoRepository.Verify(r => r.AlterarSituacaoAsync(It.IsAny<int>(), It.IsAny<int>()), Times.Never);
     }
 }

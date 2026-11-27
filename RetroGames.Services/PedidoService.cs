@@ -1,5 +1,6 @@
 using System.Transactions;
 using RetroGames.Model.Constantes;
+using RetroGames.Model.Filtros;
 using RetroGames.Model.Model;
 using RetroGames.Repository;
 
@@ -107,6 +108,54 @@ public class PedidoService(IRepositorySet repositorio, IUsuarioAtualService usua
         {
             throw new BusinessRuleException(BusinessErrors.PEDIDO_DE_OUTRO_USUARIO);
         }
+
+        return (await DetalharAsync(new List<Pedido> { pedido }))[0];
+    }
+
+    public async Task<List<PedidoDetalheServiceModel>> ListarAsync(FiltroPedido filtro)
+    {
+        if (filtro.IdSituacaoPedido.HasValue)
+        {
+            var situacoes = await repositorio.SituacaoPedido.ListarAsync();
+            if (!situacoes.Any(situacao => situacao.Id == filtro.IdSituacaoPedido))
+            {
+                throw new BusinessRuleException(BusinessErrors.SITUACAO_NAO_ENCONTRADA);
+            }
+        }
+
+        var pedidos = await repositorio.Pedido.ListarAsync(filtro);
+        if (pedidos.Count == 0)
+        {
+            return new List<PedidoDetalheServiceModel>();
+        }
+
+        var detalhes = await DetalharAsync(pedidos);
+        // Nome do cliente de cada pedido: uma consulta para todos, combinada aqui.
+        var usuarios = await repositorio.Usuario.ListarPorIdsAsync(
+            pedidos.Select(pedido => pedido.IdUsuario).Distinct().ToList());
+        foreach (var detalhe in detalhes)
+        {
+            detalhe.NomeUsuario = usuarios
+                .FirstOrDefault(usuario => usuario.Id == detalhe.Pedido.IdUsuario)?.Nome ?? string.Empty;
+        }
+        return detalhes;
+    }
+
+    public async Task<PedidoDetalheServiceModel> AlterarSituacaoAsync(int id, int idSituacaoPedido)
+    {
+        var pedido = await repositorio.Pedido.BuscarPorIdAsync(id)
+            ?? throw new BusinessRuleException(BusinessErrors.PEDIDO_NAO_ENCONTRADO);
+
+        var situacoes = await repositorio.SituacaoPedido.ListarAsync();
+        if (!situacoes.Any(situacao => situacao.Id == idSituacaoPedido))
+        {
+            throw new BusinessRuleException(BusinessErrors.SITUACAO_NAO_ENCONTRADA);
+        }
+
+        // Um só comando: sem transação. O desafio não define regra de transição
+        // (qualquer situação vale) nem devolução de estoque ao cancelar.
+        await repositorio.Pedido.AlterarSituacaoAsync(id, idSituacaoPedido);
+        pedido.IdSituacaoPedido = idSituacaoPedido;
 
         return (await DetalharAsync(new List<Pedido> { pedido }))[0];
     }

@@ -1,3 +1,4 @@
+using RetroGames.Model.Filtros;
 using RetroGames.Model.Model;
 
 namespace RetroGames.Repository;
@@ -13,4 +14,10 @@ public interface IPedidoRepository
 
     /// <summary>O pedido com o id informado, ou nulo se não existir.</summary>
     Task<Pedido?> BuscarPorIdAsync(int id);
+
+    /// <summary>Todos os pedidos (ou só os de uma situação), do mais recente para o mais antigo.</summary>
+    Task<List<Pedido>> ListarAsync(FiltroPedido filtro);
+
+    /// <summary>Troca a situação do pedido. Devolve se alguma linha foi alterada.</summary>
+    Task<bool> AlterarSituacaoAsync(int id, int idSituacaoPedido);
 }

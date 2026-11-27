@@ -1,4 +1,5 @@
 using MySqlConnector;
+using RetroGames.Model.Filtros;
 using RetroGames.Model.Model;
 
 namespace RetroGames.Repository;
@@ -49,6 +50,36 @@ public class PedidoRepository(RepositoryConfig config) : RepositoryBase(config),
         await using var leitor = await comando.ExecuteReaderAsync();
 
         return await leitor.ReadAsync() ? Mapear(leitor) : null;
+    }
+
+    public async Task<List<Pedido>> ListarAsync(FiltroPedido filtro)
+    {
+        await using var conexao = await CriarConexaoAsync();
+        // Filtro só vale quando informado: com @idSituacaoPedido nulo, vêm todos.
+        await using var comando = CriarComando(conexao,
+            "SELECT co_seq_pedido, dt_pedido, vl_total, co_usuario, co_situacao_pedido FROM tb_pedido " +
+            "WHERE (@idSituacaoPedido IS NULL OR co_situacao_pedido = @idSituacaoPedido) " +
+            "ORDER BY dt_pedido DESC, co_seq_pedido DESC");
+        AdicionarParametro(comando, "@idSituacaoPedido", filtro.IdSituacaoPedido);
+        await using var leitor = await comando.ExecuteReaderAsync();
+
+        var pedidos = new List<Pedido>();
+        while (await leitor.ReadAsync())
+        {
+            pedidos.Add(Mapear(leitor));
+        }
+        return pedidos;
+    }
+
+    public async Task<bool> AlterarSituacaoAsync(int id, int idSituacaoPedido)
+    {
+        await using var conexao = await CriarConexaoAsync();
+        await using var comando = CriarComando(conexao,
+            "UPDATE tb_pedido SET co_situacao_pedido = @idSituacaoPedido WHERE co_seq_pedido = @id");
+        AdicionarParametro(comando, "@idSituacaoPedido", idSituacaoPedido);
+        AdicionarParametro(comando, "@id", id);
+
+        return await ExecutarGravacaoAsync(comando) == 1;
     }
 
     /// <summary>Converte a linha atual do leitor num Pedido, coluna por coluna.</summary>

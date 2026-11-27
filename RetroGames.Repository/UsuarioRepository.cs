@@ -32,6 +32,33 @@ public class UsuarioRepository(RepositoryConfig config) : RepositoryBase(config)
         return await leitor.ReadAsync() ? Mapear(leitor) : null;
     }
 
+    public async Task<List<Usuario>> ListarPorIdsAsync(List<int> ids)
+    {
+        // Sem ids, não há usuário a buscar; "IN ()" seria SQL inválido.
+        if (ids.Count == 0)
+        {
+            return new List<Usuario>();
+        }
+
+        await using var conexao = await CriarConexaoAsync();
+        // Só os nomes dos parâmetros (@id0, @id1...) entram no texto; os valores vão como parâmetro.
+        var nomes = string.Join(", ", Enumerable.Range(0, ids.Count).Select(i => "@id" + i));
+        await using var comando = CriarComando(conexao,
+            "SELECT " + Colunas + " FROM tb_usuario WHERE co_seq_usuario IN (" + nomes + ")");
+        for (var i = 0; i < ids.Count; i++)
+        {
+            AdicionarParametro(comando, "@id" + i, ids[i]);
+        }
+        await using var leitor = await comando.ExecuteReaderAsync();
+
+        var usuarios = new List<Usuario>();
+        while (await leitor.ReadAsync())
+        {
+            usuarios.Add(Mapear(leitor));
+        }
+        return usuarios;
+    }
+
     public async Task<bool> ExisteAdministradorAsync()
     {
         await using var conexao = await CriarConexaoAsync();

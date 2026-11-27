@@ -14,6 +14,9 @@ public interface IUsuarioRepository
     /// <summary>Se já há algum usuário com o perfil Administrador.</summary>
     Task<bool> ExisteAdministradorAsync();
 
+    /// <summary>Os usuários de uma lista de ids, numa única consulta. Lista vazia devolve vazio.</summary>
+    Task<List<Usuario>> ListarPorIdsAsync(List<int> ids);
+
     /// <summary>Grava um novo usuário e devolve o id gerado. E-mail repetido: RegistroDuplicadoException.</summary>
     Task<int> InserirAsync(Usuario usuario);
 }

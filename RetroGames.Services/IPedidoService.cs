@@ -1,3 +1,4 @@
+using RetroGames.Model.Filtros;
 using RetroGames.Model.Model;
 
 namespace RetroGames.Services;
@@ -26,4 +27,17 @@ public interface IPedidoService
     /// O administrador vê qualquer pedido.
     /// </summary>
     Task<PedidoDetalheServiceModel> ObterAsync(int id);
+
+    /// <summary>
+    /// C07: todos os pedidos (ou só os de uma situação), do mais recente para o mais antigo,
+    /// com o nome do cliente. Situação do filtro inexistente: SITUACAO_NAO_ENCONTRADA (404, código 112).
+    /// </summary>
+    Task<List<PedidoDetalheServiceModel>> ListarAsync(FiltroPedido filtro);
+
+    /// <summary>
+    /// C07: muda a situação do pedido e devolve o pedido atualizado. Pedido inexistente:
+    /// PEDIDO_NAO_ENCONTRADO (404, código 109), conferido primeiro. Situação inexistente:
+    /// SITUACAO_NAO_ENCONTRADA (404, código 112). Não há regra de transição entre situações.
+    /// </summary>
+    Task<PedidoDetalheServiceModel> AlterarSituacaoAsync(int id, int idSituacaoPedido);
 }
