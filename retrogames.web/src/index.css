@@ -927,6 +927,13 @@ h1, h2, h3, .h1, .h2, .h3, .h4, .h5, .titulo {
   border-top: 1px solid #d9d7d0;
 }
 
+.pedido .estado {
+  /* Retorno dentro do cartão: só a faixa da cor, sem outro cartão dentro do cartão. */
+  background: transparent;
+  border-width: 0 0 0 4px;
+  padding: 0.4rem 0.75rem;
+}
+
 .troca-situacao-campo {
   flex: 1 1 10rem;
   max-width: 16rem;

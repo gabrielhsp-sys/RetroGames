@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
+import { flushSync } from 'react-dom'
 import { Link, useSearchParams } from 'react-router-dom'
 import { pedidoApi, situacaoPedidoApi } from '../../api/servicos'
 import { ehNaoEncontrado, obterMensagemErro } from '../../api/erros'
@@ -154,6 +155,7 @@ function CartaoGestaoPedido({ pedido, situacoes, aoAtualizar }) {
   const [atualizando, setAtualizando] = useState(false)
   const [aviso, setAviso] = useState('')
   const [erro, setErro] = useState('')
+  const campoSituacao = useRef(null)
   const idTitulo = `pedido-${pedido.id}`
   const idCampo = `situacao-pedido-${pedido.id}`
   const mesmaSituacao = novaSituacao === String(pedido.idSituacaoPedido)
@@ -179,9 +181,11 @@ function CartaoGestaoPedido({ pedido, situacoes, aoAtualizar }) {
       setAviso(`Situação atualizada para ${atualizado.descricaoSituacao}.`)
     } catch (falha) {
       setErro(obterMensagemErro(falha))
-    } finally {
-      setAtualizando(false)
     }
+    // O botão fica desabilitado e perderia o foco: ele volta para a lista de situações do cartão.
+    // flushSync habilita a lista na tela antes do focus() (lista desabilitada não recebe foco).
+    flushSync(() => setAtualizando(false))
+    campoSituacao.current?.focus()
   }
 
   return (
@@ -214,6 +218,7 @@ function CartaoGestaoPedido({ pedido, situacoes, aoAtualizar }) {
         <div className="d-flex flex-wrap gap-2">
           <select
             id={idCampo}
+            ref={campoSituacao}
             className="form-select troca-situacao-campo"
             value={novaSituacao}
             onChange={(evento) => {

@@ -49,11 +49,18 @@ export default function DetalhePedido() {
     ? { para: '/admin/pedidos', texto: 'Voltar aos pedidos' }
     : { para: '/meus-pedidos', texto: 'Voltar para Meus pedidos' }
 
+  const unidades = pedido?.itens.reduce((soma, item) => soma + item.quantidade, 0) ?? 0
+
   return (
     <section>
-      <Link to={voltar.para} className="btn btn-outline-primary mb-3">
-        <span aria-hidden="true">← </span>{voltar.texto}
-      </Link>
+      {/* Em 403/404 a saída fica no próprio aviso: aqui não repete o mesmo botão. */}
+      {!semSaida && (
+        <Link to={voltar.para} className="btn btn-outline-primary gap-2 mb-3">
+          <span aria-hidden="true">←</span>{voltar.texto}
+        </Link>
+      )}
+      {/* Toda tela tem um h1: enquanto o cartão do pedido não aparece, o título fica aqui. */}
+      {!pedido && <h1 className="titulo-pagina">{idValido ? `Pedido nº ${id}` : 'Pedido'}</h1>}
 
       {carregando && <Carregando texto="Carregando o pedido..." />}
       <MensagemErro mensagem={erro} aoTentarNovamente={tentarNovamente} />
@@ -82,7 +89,7 @@ export default function DetalhePedido() {
             </div>
             <div>
               <dt>Itens</dt>
-              <dd>{pedido.itens.reduce((soma, item) => soma + item.quantidade, 0)} unidade(s)</dd>
+              <dd>{unidades} {unidades === 1 ? 'unidade' : 'unidades'}</dd>
             </div>
           </dl>
 
