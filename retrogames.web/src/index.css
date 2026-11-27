@@ -18,7 +18,8 @@
   --ranhura: #8d8c94;    /* sulcos e bordas, nunca informação */
   --erro: #8a1c24;
   --sucesso: #1f5c32;
-  --atencao: #6b4400;   /* aviso que não é erro (limite do carrinho) */
+  --atencao: #6b4400;   /* aviso que não é erro (limite do carrinho); selo Pendente */
+  --enviado: #1d4a7a;   /* selo Enviado */
 
   /* Tipografia: Archivo (Google Fonts, carregada no index.html). */
   --fonte-titulo: "Archivo", "Arial Narrow", system-ui, sans-serif;
@@ -773,6 +774,70 @@ h1, h2, h3, .h1, .h2, .h3, .h4, .h5, .titulo {
   font-weight: 700;
 }
 
+/* ---------- Meus pedidos: um cartão por pedido, sem tabela larga ---------- */
+.pedido {
+  display: flex;
+  flex-direction: column;
+  padding: 1.25rem;
+  border-bottom: 6px solid var(--tinta);
+}
+
+.pedido-cabecalho {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem 1rem;
+}
+
+.pedido-data {
+  color: var(--tinta-suave);
+  font-weight: 600;
+  margin: 0.25rem 0 1rem;
+}
+
+.pedido-itens {
+  margin: 0 0 1rem;
+}
+
+.pedido-itens li {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0.1rem 1rem;
+  padding: 0.6rem 0;
+  border-top: 1px solid #d9d7d0;
+}
+
+.pedido-item-nome {
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
+
+.pedido-item-conta {
+  grid-column: 1;
+  color: var(--tinta-suave);
+  font-size: 0.95rem;
+}
+
+.pedido-item-subtotal {
+  grid-column: 2;
+  grid-row: 1 / span 2;
+  align-self: center;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.pedido-total {
+  display: flex;
+  justify-content: space-between;
+  margin-top: auto !important;
+  padding-top: 0.6rem;
+  border-top: 2px solid var(--tinta);
+  font-family: var(--fonte-titulo);
+  font-size: 1.3rem;
+  font-weight: 800;
+}
+
 /* ---------- Administração: ferramenta, sem cartucho nem etiqueta ---------- */
 .tabela-admin {
   --bs-table-bg: var(--rotulo);
@@ -809,6 +874,12 @@ h1, h2, h3, .h1, .h2, .h3, .h4, .h5, .titulo {
 }
 
 .situacao-ativo { color: var(--sucesso); }
+
+/* Selos de situação do pedido (C05): texto sempre visível, cor só reforça. */
+.situacao-pendente { color: var(--atencao); border-style: dashed; }
+.situacao-pago { color: var(--sucesso); }
+.situacao-enviado { color: var(--enviado); }
+.situacao-cancelado { color: var(--erro); text-decoration: line-through; }
 .situacao-inativo { color: var(--tinta-suave); border-style: dashed; }
 
 .form-control.is-invalid,

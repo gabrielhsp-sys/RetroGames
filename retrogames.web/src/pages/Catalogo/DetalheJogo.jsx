@@ -24,13 +24,12 @@ export default function DetalheJogo() {
   const [erro, setErro] = useState('')
   const [naoEncontrado, setNaoEncontrado] = useState(false)
   const { itens, adicionar } = useCarrinho()
-  const [aviso, setAviso] = useState(null) // { texto, noLimite }
+  const [aviso, setAviso] = useState(null) // { texto, noLimite, idJogo }
 
   const carregarJogo = useCallback(() => {
     setCarregando(true)
     setErro('')
     setNaoEncontrado(false)
-    setAviso(null)
     // A rota da API só aceita número: /jogos/abc nem chega a ser consultado.
     if (!/^\d+$/.test(id)) {
       setErro('Jogo não encontrado.')
@@ -55,7 +54,7 @@ export default function DetalheJogo() {
 
   function adicionarAoCarrinho() {
     const resultado = adicionar(jogo.id, jogo.estoque)
-    setAviso({ texto: textoDoAviso(jogo.nome, resultado), noLimite: resultado.adicionado === 0 })
+    setAviso({ texto: textoDoAviso(jogo.nome, resultado), noLimite: resultado.adicionado === 0, idJogo: jogo.id })
   }
 
   // Jogo esgotado ou inativo (o administrador vê inativos) não vai para o carrinho.
@@ -118,7 +117,8 @@ export default function DetalheJogo() {
             </div>
             {/* Região "status" sempre presente: o leitor de tela anuncia cada novo aviso. */}
             <div role="status" aria-live="polite">
-              {aviso && (
+              {/* O aviso é do jogo desta página: ao abrir outro jogo, ele some. */}
+              {aviso && aviso.idJogo === jogo.id && (
                 <div className={`estado ${aviso.noLimite ? 'estado-atencao' : 'estado-sucesso'} flex-wrap`}>
                   <span className="estado-icone" aria-hidden="true">{aviso.noLimite ? '!' : '✓'}</span>
                   <span className="me-auto fw-semibold">{aviso.texto}</span>

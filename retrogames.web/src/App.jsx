@@ -9,6 +9,7 @@ import Carrinho from './pages/Carrinho/Carrinho'
 import Catalogo from './pages/Catalogo/Catalogo'
 import DetalheJogo from './pages/Catalogo/DetalheJogo'
 import Login from './pages/Login/Login'
+import MeusPedidos from './pages/MeusPedidos/MeusPedidos'
 import NaoEncontrada from './pages/NaoEncontrada'
 
 export default function App() {
@@ -25,6 +26,7 @@ export default function App() {
         {/* Rotas de quem está logado (cliente ou administrador) */}
         <Route element={<RotaProtegida />}>
           <Route path="carrinho" element={<Carrinho />} />
+          <Route path="meus-pedidos" element={<MeusPedidos />} />
         </Route>
 
         {/* Rotas restritas ao Administrador */}
