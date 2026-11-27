@@ -244,10 +244,15 @@ Situação em 27/11/2026, dois dias antes da entrega.
 - Banco do módulo (`database/05-compras.sql` e `06-consultas-compras.sql`) e todos os códigos de erro 106 a 113 no catálogo `BusinessErrors`, inclusive os da versão completa.
 - C06, C07 e C08: back-end, testes e telas. Responsável: Gabriel.
 - 69 testes unitários passando (`dotnet test`, 27/11/2026) e build do front sem erro.
+- Especificação do repositório (endpoints, tabelas, regras e rastreabilidade, seção 7.1 do desafio), pronta em 27/11/2026:
+  - [`docs/USER_STORIES.md`](USER_STORIES.md): histórias C01 a C08 com critérios, regras, códigos de erro e a rastreabilidade história → endpoints → classes → testes → commits;
+  - [`docs/API.md`](API.md): endpoints com acesso, status e códigos, e os catálogos `ResponseCodes` e `BusinessErrors`;
+  - [`docs/MER.md`](MER.md): tabelas e relacionamentos, incluindo `tb_situacao_pedido`, `tb_pedido` e `tb_item_pedido`.
+- `README.md` atualizado com o estado do projeto e como rodar.
 
 **Ainda não pronto:**
 
-- Decisões em aberto de C07, para o grupo e o professor: o desafio não define regra de transição entre situações (hoje qualquer troca é aceita) nem devolução de estoque ao cancelar (hoje o estoque não volta). A lista do administrador não tem paginação.
-- Fora das histórias, o desafio também pede a atualização da especificação do repositório (endpoints, tabelas, regras e rastreabilidade, seção 7.1); nenhum arquivo versionado tem ainda essa rastreabilidade das histórias C01 a C08.
+- Decisões em aberto de C07, para o grupo e o professor: o desafio não define regra de transição entre situações (hoje qualquer troca é aceita) nem devolução de estoque ao cancelar (hoje o estoque não volta). A lista do administrador não tem paginação. Continuam pendentes: nenhuma alternativa foi escolhida.
+- O desafio não diz em quais arquivos a especificação deve ficar; os três acima são uma escolha a confirmar com o professor (`needs-verification` em `docs/USER_STORIES.md`).
 
 Esta seção será atualizada ao fim da sprint com o que foi entregue até 29/11/2026.
