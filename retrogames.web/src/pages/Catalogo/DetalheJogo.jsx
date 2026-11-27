@@ -4,6 +4,18 @@ import { jogoApi } from '../../api/servicos'
 import { ehNaoEncontrado, obterMensagemErro } from '../../api/erros'
 import { formatarPreco } from '../../lib/formato'
 import { Carregando, MensagemErro } from '../../components/MensagensEstado'
+import { useCarrinho } from '../../hooks/useCarrinho'
+import { QUANTIDADE_MAXIMA } from '../../contexts/carrinhoContext'
+
+// Texto do aviso depois de "Adicionar ao carrinho" (C03): diz o que aconteceu
+// e, se for o caso, por que não entrou mais uma unidade.
+function textoDoAviso(nome, { quantidade, adicionado, atingiuLimite, limite }) {
+  const motivo = limite < QUANTIDADE_MAXIMA ? 'o estoque disponível' : `o máximo de ${QUANTIDADE_MAXIMA} por pedido`
+  const unidades = quantidade === 1 ? '1 unidade' : `${quantidade} unidades`
+  if (adicionado === 0) return `Você já tem ${unidades} de ${nome} no carrinho, que é ${motivo}.`
+  if (atingiuLimite) return `${nome} no carrinho: ${unidades}, que é ${motivo}.`
+  return `${nome} no carrinho: ${unidades}.`
+}
 
 export default function DetalheJogo() {
   const { id } = useParams() // /jogos/3 → id = "3"
@@ -11,11 +23,14 @@ export default function DetalheJogo() {
   const [carregando, setCarregando] = useState(true)
   const [erro, setErro] = useState('')
   const [naoEncontrado, setNaoEncontrado] = useState(false)
+  const { itens, adicionar } = useCarrinho()
+  const [aviso, setAviso] = useState(null) // { texto, noLimite }
 
   const carregarJogo = useCallback(() => {
     setCarregando(true)
     setErro('')
     setNaoEncontrado(false)
+    setAviso(null)
     // A rota da API só aceita número: /jogos/abc nem chega a ser consultado.
     if (!/^\d+$/.test(id)) {
       setErro('Jogo não encontrado.')
@@ -37,6 +52,15 @@ export default function DetalheJogo() {
   useEffect(() => {
     carregarJogo()
   }, [carregarJogo])
+
+  function adicionarAoCarrinho() {
+    const resultado = adicionar(jogo.id, jogo.estoque)
+    setAviso({ texto: textoDoAviso(jogo.nome, resultado), noLimite: resultado.adicionado === 0 })
+  }
+
+  // Jogo esgotado ou inativo (o administrador vê inativos) não vai para o carrinho.
+  const podeComprar = jogo?.ativo !== false && jogo?.estoque > 0
+  const noCarrinho = jogo ? itens.find((item) => item.idJogo === jogo.id)?.quantidade ?? 0 : 0
 
   return (
     <section>
@@ -76,6 +100,32 @@ export default function DetalheJogo() {
               <dt className="col-5 col-sm-4">Gêneros</dt>
               <dd className="col-7 col-sm-8 mb-0">{jogo.generos.map((g) => g.nome).join(', ')}</dd>
             </dl>
+            <div className="compra mb-4">
+              {/* Sem estoque, o botão fica desabilitado e diz por quê (heurística 5). */}
+              <button
+                type="button"
+                className="btn btn-primary btn-lg"
+                onClick={adicionarAoCarrinho}
+                disabled={!podeComprar}
+              >
+                {podeComprar ? 'Adicionar ao carrinho' : jogo.ativo === false ? 'Indisponível' : 'Esgotado'}
+              </button>
+              {noCarrinho > 0 && (
+                <span className="compra-no-carrinho">
+                  No carrinho: {noCarrinho} {noCarrinho === 1 ? 'unidade' : 'unidades'}
+                </span>
+              )}
+            </div>
+            {/* Região "status" sempre presente: o leitor de tela anuncia cada novo aviso. */}
+            <div role="status" aria-live="polite">
+              {aviso && (
+                <div className={`estado ${aviso.noLimite ? 'estado-atencao' : 'estado-sucesso'} flex-wrap`}>
+                  <span className="estado-icone" aria-hidden="true">{aviso.noLimite ? '!' : '✓'}</span>
+                  <span className="me-auto fw-semibold">{aviso.texto}</span>
+                  <Link to="/carrinho" className="btn btn-outline-primary">Ver carrinho</Link>
+                </div>
+              )}
+            </div>
             {/* Descrição é opcional: sem ela, a seção não aparece (nada de "null"). */}
             {jogo.descricao && <p className="descricao">{jogo.descricao}</p>}
           </div>

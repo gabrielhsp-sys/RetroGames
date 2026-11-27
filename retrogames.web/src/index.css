@@ -18,6 +18,7 @@
   --ranhura: #8d8c94;    /* sulcos e bordas, nunca informação */
   --erro: #8a1c24;
   --sucesso: #1f5c32;
+  --atencao: #6b4400;   /* aviso que não é erro (limite do carrinho) */
 
   /* Tipografia: Archivo (Google Fonts, carregada no index.html). */
   --fonte-titulo: "Archivo", "Arial Narrow", system-ui, sans-serif;
@@ -553,6 +554,186 @@ h1, h2, h3, .h1, .h2, .h3, .h4, .h5, .titulo {
 
 .estado-sucesso .estado-icone {
   background: var(--sucesso);
+}
+
+/* Aviso que não é erro nem sucesso: o pedido foi atendido só em parte. */
+.estado-atencao {
+  border-color: var(--atencao);
+  border-left-width: 8px;
+}
+
+.estado-atencao .estado-icone {
+  background: var(--atencao);
+}
+
+/* ---------- Compra: botão do detalhe ---------- */
+.compra {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem 1rem;
+}
+
+.compra-no-carrinho {
+  font-weight: 700;
+  color: var(--tinta-suave);
+}
+
+/* ---------- Carrinho: cada linha é um cartucho deitado na prateleira ---------- */
+.linha-carrinho {
+  display: grid;
+  grid-template-columns: 56px minmax(0, 1fr);
+  gap: 0.75rem 1rem;
+  align-items: start;
+  background: var(--rotulo);
+  border: 2px solid var(--ranhura);
+  border-bottom: 6px solid var(--tinta); /* a tábua da prateleira */
+  border-radius: var(--raio);
+  padding: 1rem;
+}
+
+.cartucho-mini {
+  width: 56px;
+}
+
+.cartucho-mini .cartucho-rotulo {
+  padding: 0;
+}
+
+.linha-plataforma {
+  font-size: 0.85rem;
+  font-weight: 700;
+  font-stretch: 87%;
+  color: var(--tinta-suave);
+}
+
+.linha-nome {
+  font-family: var(--fonte-titulo);
+  font-size: 1.2rem;
+  font-weight: 800;
+  font-stretch: 87%;
+  line-height: 1.15;
+  overflow-wrap: anywhere;
+}
+
+.linha-nome a {
+  color: var(--tinta);
+  text-decoration-thickness: 2px;
+  text-underline-offset: 3px;
+}
+
+.linha-nome a:hover {
+  color: var(--roxo);
+}
+
+/* Etiqueta de preço da linha: a mesma do cartucho, sem ficar pendurada. */
+.etiqueta-linha {
+  position: static;
+  display: inline-block;
+  font-size: 1rem;
+  padding: 0.2rem 0.6rem 0.2rem 1.05rem;
+  transform: rotate(-2deg);
+}
+
+/* Ações ocupam a linha de baixo no celular e a coluna da direita no computador. */
+.linha-acoes {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 0.75rem 1rem;
+}
+
+.linha-acoes .form-select {
+  width: auto;
+  min-width: 5.5rem;
+}
+
+.linha-subtotal {
+  font-weight: 800;
+  font-size: 1.1rem;
+  margin-inline-end: auto;
+}
+
+.linha-subtotal .small {
+  font-weight: 600;
+  color: var(--tinta-suave);
+}
+
+@media (min-width: 768px) {
+  .linha-carrinho {
+    grid-template-columns: 72px minmax(0, 1fr) auto;
+    align-items: center;
+  }
+
+  .cartucho-mini {
+    width: 72px;
+  }
+
+  .linha-acoes {
+    grid-column: auto;
+    justify-content: flex-end;
+  }
+
+  .linha-subtotal {
+    margin-inline-end: 0;
+    text-align: right;
+    min-width: 7.5rem;
+  }
+}
+
+/* Item que bloqueia a compra: borda de erro e o aviso escrito (nunca só a cor). */
+.linha-indisponivel {
+  border-color: var(--erro);
+  border-left-width: 8px;
+}
+
+.linha-indisponivel .cartucho-mini {
+  opacity: 0.55;
+}
+
+.linha-aviso {
+  color: var(--erro);
+  font-weight: 700;
+}
+
+/* Resumo do pedido */
+@media (min-width: 992px) {
+  .resumo {
+    position: sticky;
+    top: 1rem;
+  }
+}
+
+.resumo-linhas {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 0.35rem 1rem;
+  margin: 0;
+}
+
+.resumo-linhas dt {
+  font-weight: 600;
+}
+
+.resumo-linhas dd {
+  margin: 0;
+  text-align: right;
+  font-weight: 700;
+}
+
+.resumo-linhas .resumo-total {
+  border-top: 2px solid var(--tinta);
+  padding-top: 0.5rem;
+  margin-top: 0.25rem;
+  font-family: var(--fonte-titulo);
+  font-size: 1.35rem;
+  font-weight: 800;
+}
+
+.aviso-pendencia {
+  color: var(--erro);
+  font-weight: 700;
 }
 
 /* ---------- Administração: ferramenta, sem cartucho nem etiqueta ---------- */

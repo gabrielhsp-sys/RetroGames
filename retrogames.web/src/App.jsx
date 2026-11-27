@@ -5,6 +5,7 @@ import FormularioJogo from './pages/Administracao/FormularioJogo'
 import Jogos from './pages/Administracao/Jogos'
 import Plataforma from './pages/Auxiliares/Plataforma'
 import Cadastro from './pages/Cadastro/Cadastro'
+import Carrinho from './pages/Carrinho/Carrinho'
 import Catalogo from './pages/Catalogo/Catalogo'
 import DetalheJogo from './pages/Catalogo/DetalheJogo'
 import Login from './pages/Login/Login'
@@ -20,6 +21,11 @@ export default function App() {
         <Route path="jogos/:id" element={<DetalheJogo />} />
         <Route path="login" element={<Login />} />
         <Route path="cadastro" element={<Cadastro />} />
+
+        {/* Rotas de quem está logado (cliente ou administrador) */}
+        <Route element={<RotaProtegida />}>
+          <Route path="carrinho" element={<Carrinho />} />
+        </Route>
 
         {/* Rotas restritas ao Administrador */}
         <Route path="admin" element={<RotaProtegida somenteAdministrador />}>
