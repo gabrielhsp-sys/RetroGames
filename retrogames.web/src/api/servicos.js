@@ -41,4 +41,11 @@ export const pedidoApi = {
   listarMeus: () => api.get('/Pedido/meus').then(dados),
   // C06: o dono ou o administrador; pedido de outro cliente responde 403 (código 113).
   buscarPorId: (id) => api.get(`/Pedido/${id}`).then(dados),
+  // C07 (administrador): todos os pedidos, com filtro opcional, e a troca de situação.
+  listar: (idSituacao) => api.get('/Pedido', { params: { idSituacao } }).then(dados),
+  alterarSituacao: (id, idSituacao) => api.put(`/Pedido/${id}/situacao`, { idSituacao }).then(dados),
+}
+
+export const situacaoPedidoApi = {
+  listar: () => api.get('/SituacaoPedido').then(dados), // só administrador (C07)
 }

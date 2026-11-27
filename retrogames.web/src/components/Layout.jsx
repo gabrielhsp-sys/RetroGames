@@ -83,12 +83,13 @@ export default function Layout() {
                     <ul className="dropdown-menu">
                       <li><NavLink className="dropdown-item" to="/admin/jogos" onClick={fecharMenu}>Jogos</NavLink></li>
                       <li><NavLink className="dropdown-item" to="/admin/plataformas" onClick={fecharMenu}>Plataformas</NavLink></li>
+                      <li><NavLink className="dropdown-item" to="/admin/pedidos" onClick={fecharMenu}>Pedidos</NavLink></li>
                     </ul>
                   </li>
                 )}
               </ul>
               <div className="d-flex flex-wrap align-items-center gap-2 py-2 py-md-0">
-                {/* O carrinho é de todos: o visitante monta e entra só para finalizar (C03). */}
+                {/* O link aparece para todos, mas o carrinho exige login: o visitante entra para vê-lo e finalizar (C03). */}
                 <LinkCarrinho contador={contador} className="d-none d-md-inline-flex" aoClicar={fecharMenu} />
                 {/* Enquanto o "eu" não responde, não mostra Entrar nem Sair (evita piscar). */}
                 {!carregando && (estaAutenticado ? (

@@ -911,6 +911,27 @@ h1, h2, h3, .h1, .h2, .h3, .h4, .h5, .titulo {
   font-weight: 700;
 }
 
+/* ---------- Gestão de pedidos (C07): cartões, sem tabela larga no celular ---------- */
+.filtro-pedidos .form-select {
+  max-width: 20rem;
+}
+
+.pedido-itens-resumo {
+  margin: 0 0 1rem;
+  overflow-wrap: anywhere;
+}
+
+.troca-situacao {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid #d9d7d0;
+}
+
+.troca-situacao-campo {
+  flex: 1 1 10rem;
+  max-width: 16rem;
+}
+
 /* ---------- Administração: ferramenta, sem cartucho nem etiqueta ---------- */
 .tabela-admin {
   --bs-table-bg: var(--rotulo);
