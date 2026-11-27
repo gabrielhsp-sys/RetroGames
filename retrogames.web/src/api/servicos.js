@@ -39,4 +39,6 @@ export const condicaoJogoApi = {
 export const pedidoApi = {
   criar: (itens) => api.post('/Pedido', { itens }).then(dados),
   listarMeus: () => api.get('/Pedido/meus').then(dados),
+  // C06: o dono ou o administrador; pedido de outro cliente responde 403 (código 113).
+  buscarPorId: (id) => api.get(`/Pedido/${id}`).then(dados),
 }

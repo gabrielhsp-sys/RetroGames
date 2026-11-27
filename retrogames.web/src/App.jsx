@@ -11,6 +11,7 @@ import DetalheJogo from './pages/Catalogo/DetalheJogo'
 import Login from './pages/Login/Login'
 import MeusPedidos from './pages/MeusPedidos/MeusPedidos'
 import NaoEncontrada from './pages/NaoEncontrada'
+import DetalhePedido from './pages/Pedidos/DetalhePedido'
 
 export default function App() {
   return (
@@ -27,6 +28,8 @@ export default function App() {
         <Route element={<RotaProtegida />}>
           <Route path="carrinho" element={<Carrinho />} />
           <Route path="meus-pedidos" element={<MeusPedidos />} />
+          {/* C06: o detalhe é do dono ou do administrador; a API responde 403 aos demais. */}
+          <Route path="pedidos/:id" element={<DetalhePedido />} />
         </Route>
 
         {/* Rotas restritas ao Administrador */}

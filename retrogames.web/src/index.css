@@ -888,6 +888,29 @@ h1, h2, h3, .h1, .h2, .h3, .h4, .h5, .titulo {
   font-weight: 800;
 }
 
+/* ---------- Detalhe do pedido (C06) ---------- */
+.pedido-detalhe {
+  max-width: 48rem;
+}
+
+.pedido-resumo {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 2rem;
+  margin: 0.75rem 0 1.25rem;
+}
+
+.pedido-resumo dt {
+  font-size: 0.85rem;
+  color: var(--tinta-suave);
+  font-weight: 600;
+}
+
+.pedido-resumo dd {
+  margin: 0;
+  font-weight: 700;
+}
+
 /* ---------- Administração: ferramenta, sem cartucho nem etiqueta ---------- */
 .tabela-admin {
   --bs-table-bg: var(--rotulo);

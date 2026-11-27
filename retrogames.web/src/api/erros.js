@@ -14,6 +14,11 @@ export function ehNaoEncontrado(erro) {
   return erro?.response?.status === 404
 }
 
+// O usuário está logado, mas não pode ver o registro (HTTP 403): tentar de novo não adianta.
+export function ehSemAcesso(erro) {
+  return erro?.response?.status === 403
+}
+
 // Falha de validação (400, responseCode 3): { campo: [mensagens] } vira
 // { campo: 'primeira mensagem' }, para mostrar embaixo de cada campo.
 // Nos demais casos, {}.
