@@ -16,6 +16,12 @@ public interface IJogoRepository
     /// <summary>O jogo com o id informado, ou nulo se não existir.</summary>
     Task<Jogo?> BuscarPorIdAsync(int id);
 
+    /// <summary>
+    /// Os jogos de uma lista de ids, ativos ou não, numa única consulta. Id que não existe
+    /// simplesmente não volta. Lista vazia devolve vazio.
+    /// </summary>
+    Task<List<Jogo>> ListarPorIdsAsync(List<int> ids);
+
     /// <summary>Grava um novo jogo e devolve o id gerado pelo banco.</summary>
     Task<int> InserirAsync(Jogo jogo);
 
@@ -24,4 +30,11 @@ public interface IJogoRepository
 
     /// <summary>Marca o jogo como inativo (st_ativo). Jogo nunca é apagado.</summary>
     Task DesativarAsync(int id);
+
+    /// <summary>
+    /// Baixa a quantidade do estoque só se ainda houver estoque suficiente, num único UPDATE.
+    /// Devolve falso quando não baixou (estoque menor que a quantidade, ou jogo inexistente).
+    /// A condição no próprio UPDATE impede vender além do estoque em compras simultâneas.
+    /// </summary>
+    Task<bool> BaixarEstoqueAsync(int id, int quantidade);
 }

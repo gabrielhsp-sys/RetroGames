@@ -9,4 +9,7 @@ public interface IRepositorySet
     IGeneroRepository Genero { get; }
     ICondicaoJogoRepository CondicaoJogo { get; }
     IUsuarioRepository Usuario { get; }
+    IPedidoRepository Pedido { get; }
+    IItemPedidoRepository ItemPedido { get; }
+    ISituacaoPedidoRepository SituacaoPedido { get; }
 }

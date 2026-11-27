@@ -1,0 +1,235 @@
+using Moq;
+using RetroGames.Model.Constantes;
+using RetroGames.Model.Model;
+using RetroGames.Repository;
+using RetroGames.Services;
+
+namespace RetroGames.WebApi.UnitTests.Services;
+
+/// <summary>
+/// Testes do PedidoService (C04 e C05). Cada repositório que o Service usa é um mock,
+/// e o IRepositorySet simulado devolve todos eles. O usuário logado é o 5.
+/// Nenhum teste usa o banco.
+/// </summary>
+public class PedidoServiceTests
+{
+    private const int IdUsuarioLogado = 5;
+
+    private readonly Mock<IJogoRepository> jogoRepository = new();
+    private readonly Mock<IPedidoRepository> pedidoRepository = new();
+    private readonly Mock<IItemPedidoRepository> itemPedidoRepository = new();
+    private readonly Mock<ISituacaoPedidoRepository> situacaoPedidoRepository = new();
+    private readonly Mock<IRepositorySet> repositorio = new();
+    private readonly Mock<IUsuarioAtualService> usuarioAtual = new();
+
+    public PedidoServiceTests()
+    {
+        repositorio.Setup(r => r.Jogo).Returns(jogoRepository.Object);
+        repositorio.Setup(r => r.Pedido).Returns(pedidoRepository.Object);
+        repositorio.Setup(r => r.ItemPedido).Returns(itemPedidoRepository.Object);
+        repositorio.Setup(r => r.SituacaoPedido).Returns(situacaoPedidoRepository.Object);
+        usuarioAtual.Setup(u => u.Id).Returns(IdUsuarioLogado);
+        situacaoPedidoRepository.Setup(r => r.ListarAsync()).ReturnsAsync(new List<SituacaoPedido>
+        {
+            new() { Id = SituacaoPedidoIds.Pendente, Descricao = "Pendente" },
+            new() { Id = SituacaoPedidoIds.Pago, Descricao = "Pago" },
+        });
+        // Por padrão a baixa de estoque dá certo e o pedido gravado recebe o id 10.
+        jogoRepository.Setup(r => r.BaixarEstoqueAsync(It.IsAny<int>(), It.IsAny<int>())).ReturnsAsync(true);
+        pedidoRepository.Setup(r => r.InserirAsync(It.IsAny<Pedido>())).ReturnsAsync(10);
+    }
+
+    private PedidoService CriarService()
+    {
+        return new PedidoService(repositorio.Object, usuarioAtual.Object);
+    }
+
+    private static Jogo CriarJogo(int id, decimal preco, int estoque, bool ativo = true)
+    {
+        return new Jogo { Id = id, Nome = "Jogo " + id, Preco = preco, Estoque = estoque, Ativo = ativo };
+    }
+
+    /// <summary>O banco tem estes jogos: ListarPorIdsAsync devolve os que estão na lista pedida.</summary>
+    private void JogosNoBanco(params Jogo[] jogos)
+    {
+        jogoRepository.Setup(r => r.ListarPorIdsAsync(It.IsAny<List<int>>()))
+            .ReturnsAsync((List<int> ids) => jogos.Where(jogo => ids.Contains(jogo.Id)).ToList());
+    }
+
+    private static ItemPedido Item(int idJogo, int quantidade)
+    {
+        return new ItemPedido { IdJogo = idJogo, Quantidade = quantidade };
+    }
+
+    /// <summary>Confere que nada foi gravado: nem baixa, nem pedido, nem itens.</summary>
+    private void NadaFoiGravado()
+    {
+        jogoRepository.Verify(r => r.BaixarEstoqueAsync(It.IsAny<int>(), It.IsAny<int>()), Times.Never);
+        pedidoRepository.Verify(r => r.InserirAsync(It.IsAny<Pedido>()), Times.Never);
+        itemPedidoRepository.Verify(r => r.InserirAsync(It.IsAny<int>(), It.IsAny<List<ItemPedido>>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task Criar_ItensValidos_GravaPedidoPendenteDoUsuarioComTotalCalculado()
+    {
+        // Arrange: 2 × 100,00 + 1 × 59,90 = 259,90.
+        JogosNoBanco(CriarJogo(1, 100.00m, 5), CriarJogo(2, 59.90m, 5));
+        Pedido? gravado = null;
+        pedidoRepository.Setup(r => r.InserirAsync(It.IsAny<Pedido>()))
+            .Callback<Pedido>(pedido => gravado = pedido)
+            .ReturnsAsync(10);
+        var service = CriarService();
+
+        // Act
+        await service.CriarAsync(new List<ItemPedido> { Item(1, 2), Item(2, 1) });
+
+        // Assert
+        Assert.NotNull(gravado);
+        Assert.Equal(259.90m, gravado.Total);
+        Assert.Equal(SituacaoPedidoIds.Pendente, gravado.IdSituacaoPedido);
+        Assert.Equal(IdUsuarioLogado, gravado.IdUsuario);
+        Assert.Equal(DateTimeKind.Utc, gravado.Data.Kind);
+    }
+
+    [Fact]
+    public async Task Criar_ItensValidos_BaixaOEstoqueEGravaOsItensDoPedido()
+    {
+        // Arrange
+        JogosNoBanco(CriarJogo(1, 100.00m, 5), CriarJogo(2, 59.90m, 5));
+        List<ItemPedido>? itensGravados = null;
+        itemPedidoRepository.Setup(r => r.InserirAsync(10, It.IsAny<List<ItemPedido>>()))
+            .Callback<int, List<ItemPedido>>((_, itens) => itensGravados = itens)
+            .Returns(Task.CompletedTask);
+        var service = CriarService();
+
+        // Act
+        await service.CriarAsync(new List<ItemPedido> { Item(1, 2), Item(2, 1) });
+
+        // Assert
+        jogoRepository.Verify(r => r.BaixarEstoqueAsync(1, 2), Times.Once);
+        jogoRepository.Verify(r => r.BaixarEstoqueAsync(2, 1), Times.Once);
+        Assert.NotNull(itensGravados);
+        Assert.Equal(2, itensGravados.Count);
+        Assert.All(itensGravados, item => Assert.Equal(10, item.IdPedido));
+    }
+
+    [Fact]
+    public async Task Criar_ItemComPrecoVindoDeFora_UsaOPrecoDoBanco()
+    {
+        // Arrange: o item chega com um preço qualquer; o jogo custa 149,90 no banco.
+        JogosNoBanco(CriarJogo(1, 149.90m, 5));
+        var item = Item(1, 2);
+        item.ValorUnitario = 0.01m;
+        Pedido? gravado = null;
+        pedidoRepository.Setup(r => r.InserirAsync(It.IsAny<Pedido>()))
+            .Callback<Pedido>(pedido => gravado = pedido)
+            .ReturnsAsync(10);
+        var service = CriarService();
+
+        // Act
+        var criado = await service.CriarAsync(new List<ItemPedido> { item });
+
+        // Assert
+        Assert.Equal(149.90m, criado.Itens[0].Item.ValorUnitario);
+        Assert.Equal(299.80m, gravado!.Total);
+    }
+
+    [Fact]
+    public async Task Criar_ItensValidos_DevolvePedidoComSituacaoEItensComNomeDoJogo()
+    {
+        // Arrange
+        JogosNoBanco(CriarJogo(1, 100.00m, 5));
+        var service = CriarService();
+
+        // Act
+        var criado = await service.CriarAsync(new List<ItemPedido> { Item(1, 3) });
+
+        // Assert
+        Assert.Equal(10, criado.Pedido.Id);
+        Assert.Equal("Pendente", criado.DescricaoSituacao);
+        var item = Assert.Single(criado.Itens);
+        Assert.Equal("Jogo 1", item.NomeJogo);
+        Assert.Equal(3, item.Item.Quantidade);
+    }
+
+    [Fact]
+    public async Task Criar_JogoInexistente_LancaJogoIndisponivelENaoGrava()
+    {
+        // Arrange: o pedido tem os jogos 1 e 99; só o 1 existe.
+        JogosNoBanco(CriarJogo(1, 100.00m, 5));
+        var service = CriarService();
+
+        // Act
+        var excecao = await Assert.ThrowsAsync<BusinessRuleException>(
+            () => service.CriarAsync(new List<ItemPedido> { Item(1, 1), Item(99, 1) }));
+
+        // Assert
+        Assert.Equal(BusinessErrors.JOGO_INDISPONIVEL, excecao.Erro);
+        NadaFoiGravado();
+    }
+
+    [Fact]
+    public async Task Criar_JogoInativo_LancaJogoIndisponivelENaoGrava()
+    {
+        // Arrange
+        JogosNoBanco(CriarJogo(1, 100.00m, 5, ativo: false));
+        var service = CriarService();
+
+        // Act
+        var excecao = await Assert.ThrowsAsync<BusinessRuleException>(
+            () => service.CriarAsync(new List<ItemPedido> { Item(1, 1) }));
+
+        // Assert
+        Assert.Equal(BusinessErrors.JOGO_INDISPONIVEL, excecao.Erro);
+        NadaFoiGravado();
+    }
+
+    [Fact]
+    public async Task Criar_QuantidadeUmAcimaDoEstoque_LancaEstoqueInsuficienteENaoGrava()
+    {
+        // Arrange: borda de cima, estoque 2 e quantidade 3.
+        JogosNoBanco(CriarJogo(1, 100.00m, 2));
+        var service = CriarService();
+
+        // Act
+        var excecao = await Assert.ThrowsAsync<BusinessRuleException>(
+            () => service.CriarAsync(new List<ItemPedido> { Item(1, 3) }));
+
+        // Assert
+        Assert.Equal(BusinessErrors.ESTOQUE_INSUFICIENTE, excecao.Erro);
+        NadaFoiGravado();
+    }
+
+    [Fact]
+    public async Task Criar_QuantidadeIgualAoEstoque_GravaOPedido()
+    {
+        // Arrange: borda, estoque 3 e quantidade 3 (leva tudo).
+        JogosNoBanco(CriarJogo(1, 100.00m, 3));
+        var service = CriarService();
+
+        // Act
+        await service.CriarAsync(new List<ItemPedido> { Item(1, 3) });
+
+        // Assert
+        jogoRepository.Verify(r => r.BaixarEstoqueAsync(1, 3), Times.Once);
+        pedidoRepository.Verify(r => r.InserirAsync(It.IsAny<Pedido>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task Criar_BaixaRecusadaPorCompraSimultanea_LancaEstoqueInsuficienteENaoInserePedido()
+    {
+        // Arrange: a conferência passou, mas outra compra levou o jogo 2 antes da baixa.
+        JogosNoBanco(CriarJogo(1, 100.00m, 5), CriarJogo(2, 59.90m, 1));
+        jogoRepository.Setup(r => r.BaixarEstoqueAsync(2, 1)).ReturnsAsync(false);
+        var service = CriarService();
+
+        // Act
+        var excecao = await Assert.ThrowsAsync<BusinessRuleException>(
+            () => service.CriarAsync(new List<ItemPedido> { Item(1, 1), Item(2, 1) }));
+
+        // Assert: a baixa do jogo 1 é desfeita pela transação; pedido e itens nem chegam a ser gravados.
+        Assert.Equal(BusinessErrors.ESTOQUE_INSUFICIENTE, excecao.Erro);
+        pedidoRepository.Verify(r => r.InserirAsync(It.IsAny<Pedido>()), Times.Never);
+        itemPedidoRepository.Verify(r => r.InserirAsync(It.IsAny<int>(), It.IsAny<List<ItemPedido>>()), Times.Never);
+    }
+}

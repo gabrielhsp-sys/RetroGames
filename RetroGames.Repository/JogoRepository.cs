@@ -76,6 +76,33 @@ public class JogoRepository(RepositoryConfig config) : RepositoryBase(config), I
         return await leitor.ReadAsync() ? Mapear(leitor) : null;
     }
 
+    public async Task<List<Jogo>> ListarPorIdsAsync(List<int> ids)
+    {
+        // Sem ids, não há jogo a buscar; "IN ()" seria SQL inválido.
+        if (ids.Count == 0)
+        {
+            return new List<Jogo>();
+        }
+
+        await using var conexao = await CriarConexaoAsync();
+        // Só os nomes dos parâmetros (@id0, @id1...) entram no texto; os valores vão como parâmetro.
+        await using var comando = CriarComando(conexao,
+            "SELECT " + Colunas + " FROM tb_jogo WHERE co_seq_jogo IN (" + NomesDeParametros("@id", ids.Count) + ") " +
+            "ORDER BY co_seq_jogo");
+        for (var i = 0; i < ids.Count; i++)
+        {
+            AdicionarParametro(comando, "@id" + i, ids[i]);
+        }
+        await using var leitor = await comando.ExecuteReaderAsync();
+
+        var jogos = new List<Jogo>();
+        while (await leitor.ReadAsync())
+        {
+            jogos.Add(Mapear(leitor));
+        }
+        return jogos;
+    }
+
     public async Task<int> InserirAsync(Jogo jogo)
     {
         await using var conexao = await CriarConexaoAsync();
@@ -127,6 +154,19 @@ public class JogoRepository(RepositoryConfig config) : RepositoryBase(config), I
         AdicionarParametro(comando, "@id", id);
 
         await ExecutarGravacaoAsync(comando);
+    }
+
+    public async Task<bool> BaixarEstoqueAsync(int id, int quantidade)
+    {
+        await using var conexao = await CriarConexaoAsync();
+        await using var comando = CriarComando(conexao,
+            "UPDATE tb_jogo SET qt_estoque = qt_estoque - @quantidade " +
+            "WHERE co_seq_jogo = @id AND qt_estoque >= @quantidade");
+        AdicionarParametro(comando, "@quantidade", quantidade);
+        AdicionarParametro(comando, "@id", id);
+
+        // 0 linhas: a condição de estoque não foi atendida (quem decide o erro é o Service).
+        return await ExecutarGravacaoAsync(comando) == 1;
     }
 
     /// <summary>Monta "@id0, @id1, ..." com a quantidade informada. Só nomes, nunca valores.</summary>
