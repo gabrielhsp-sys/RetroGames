@@ -26,4 +26,11 @@ public static class UsuarioMapper
         Email = usuario.FindFirstValue(ClaimTypes.Email) ?? string.Empty,
         Perfil = usuario.FindFirstValue(ClaimTypes.Role) ?? string.Empty,
     };
+
+    /// <summary>Corpo do cadastro → Usuario do modelo. A senha vai ao Service à parte, que grava só o hash.</summary>
+    public static Usuario ParaModel(this CadastrarUsuarioRequestApiModel request) => new()
+    {
+        Nome = request.Nome,
+        Email = request.Email,
+    };
 }

@@ -10,7 +10,7 @@ using RetroGames.WebApi.Mappers;
 namespace RetroGames.WebApi.Controllers;
 
 /// <summary>
-/// Login, logout e o usuário da sessão. Quem confere e-mail e senha é o AutenticacaoService;
+/// Login, cadastro de cliente, logout e o usuário da sessão. Quem confere e-mail e senha é o AutenticacaoService;
 /// aqui só se cria ou apaga o cookie retrogames.sessao.
 /// </summary>
 [ApiController]
@@ -33,6 +33,22 @@ public class AutenticacaoController(IAutenticacaoService autenticacaoService) : 
 
         await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, usuario.ParaClaimsPrincipal());
         return Ok(new RetroGamesResponseApiModel<UsuarioLogadoResponseApiModel>(usuario.ParaUsuarioLogadoResponse()));
+    }
+
+    /// <summary>
+    /// POST /api/Autenticacao/cadastrar (C01): cria o cliente e já inicia a sessão, como o login.
+    /// 201 com o usuário e Location em /api/Autenticacao/eu; e-mail repetido, 409 com código 106.
+    /// </summary>
+    [HttpPost("cadastrar")]
+    [AllowAnonymous]
+    public async Task<ActionResult<RetroGamesResponseApiModel<UsuarioLogadoResponseApiModel>>> Cadastrar(
+        CadastrarUsuarioRequestApiModel request)
+    {
+        var usuario = await autenticacaoService.CadastrarAsync(request.ParaModel(), request.Senha);
+
+        await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, usuario.ParaClaimsPrincipal());
+        return CreatedAtAction(nameof(Eu), null,
+            new RetroGamesResponseApiModel<UsuarioLogadoResponseApiModel>(usuario.ParaUsuarioLogadoResponse()));
     }
 
     /// <summary>POST /api/Autenticacao/logout: apaga o cookie de sessão.</summary>
