@@ -11,6 +11,9 @@ public interface IJogoGeneroRepository
     /// <summary>Os vínculos de uma lista de jogos, numa única consulta. Lista vazia devolve vazio.</summary>
     Task<List<JogoGenero>> ListarPorJogosAsync(List<int> idsJogo);
 
+    /// <summary>Se algum jogo tem o gênero informado (consulta tb_jogo_genero).</summary>
+    Task<bool> ExisteComGeneroAsync(int idGenero);
+
     /// <summary>Grava os vínculos de um jogo com os seus gêneros.</summary>
     Task InserirAsync(int idJogo, List<int> idsGenero);
 

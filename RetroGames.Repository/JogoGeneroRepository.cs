@@ -39,6 +39,16 @@ public class JogoGeneroRepository(RepositoryConfig config) : RepositoryBase(conf
         return await LerVinculosAsync(leitor);
     }
 
+    public async Task<bool> ExisteComGeneroAsync(int idGenero)
+    {
+        await using var conexao = await CriarConexaoAsync();
+        await using var comando = CriarComando(conexao,
+            "SELECT COUNT(*) FROM tb_jogo_genero WHERE co_genero = @idGenero");
+        AdicionarParametro(comando, "@idGenero", idGenero);
+
+        return Convert.ToInt64(await comando.ExecuteScalarAsync()) > 0;
+    }
+
     public async Task InserirAsync(int idJogo, List<int> idsGenero)
     {
         if (idsGenero.Count == 0)

@@ -12,4 +12,17 @@ public static class GeneroMapper
         Id = genero.Id,
         Nome = genero.Nome,
     };
+
+    /// <summary>Corpo do POST → Genero do modelo. O id ainda não existe: o banco o gera.</summary>
+    public static Genero ParaModel(this InserirGeneroRequestApiModel request) => new()
+    {
+        Nome = request.Nome,
+    };
+
+    /// <summary>Corpo do PUT → Genero do modelo. O id vem da rota, não do corpo.</summary>
+    public static Genero ParaModel(this AlterarGeneroRequestApiModel request, int id) => new()
+    {
+        Id = id,
+        Nome = request.Nome,
+    };
 }
