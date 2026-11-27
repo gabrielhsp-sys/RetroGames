@@ -2,7 +2,7 @@ using RetroGames.Model.Model;
 
 namespace RetroGames.Services;
 
-/// <summary>Regras de negócio de pedidos do Módulo de Compras (C04).</summary>
+/// <summary>Regras de negócio de pedidos do Módulo de Compras (C04 e C05).</summary>
 public interface IPedidoService
 {
     /// <summary>
@@ -12,4 +12,10 @@ public interface IPedidoService
     /// Pedido, itens e baixa de estoque numa só transação. Devolve o pedido criado.
     /// </summary>
     Task<PedidoDetalheServiceModel> CriarAsync(List<ItemPedido> itens);
+
+    /// <summary>
+    /// C05: só os pedidos do usuário logado, do mais recente para o mais antigo,
+    /// com a situação, o total e os itens (jogo, quantidade e preço pago).
+    /// </summary>
+    Task<List<PedidoDetalheServiceModel>> ListarMeusAsync();
 }

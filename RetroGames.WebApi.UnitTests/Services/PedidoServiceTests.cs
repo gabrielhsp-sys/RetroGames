@@ -232,4 +232,84 @@ public class PedidoServiceTests
         pedidoRepository.Verify(r => r.InserirAsync(It.IsAny<Pedido>()), Times.Never);
         itemPedidoRepository.Verify(r => r.InserirAsync(It.IsAny<int>(), It.IsAny<List<ItemPedido>>()), Times.Never);
     }
+
+    [Fact]
+    public async Task ListarMeus_UsuarioLogado_BuscaSoOsPedidosDele()
+    {
+        // Arrange
+        pedidoRepository.Setup(r => r.ListarPorUsuarioAsync(It.IsAny<int>())).ReturnsAsync(new List<Pedido>());
+        var service = CriarService();
+
+        // Act
+        await service.ListarMeusAsync();
+
+        // Assert
+        pedidoRepository.Verify(r => r.ListarPorUsuarioAsync(IdUsuarioLogado), Times.Once);
+        pedidoRepository.Verify(r => r.ListarPorUsuarioAsync(It.Is<int>(id => id != IdUsuarioLogado)), Times.Never);
+    }
+
+    [Fact]
+    public async Task ListarMeus_PedidosDoMaisRecenteAoMaisAntigo_MantemAOrdem()
+    {
+        // Arrange: o Repository devolve do mais recente (12) para o mais antigo (11).
+        pedidoRepository.Setup(r => r.ListarPorUsuarioAsync(IdUsuarioLogado)).ReturnsAsync(new List<Pedido>
+        {
+            new() { Id = 12, Data = new DateTime(2026, 11, 20, 0, 0, 0, DateTimeKind.Utc), IdSituacaoPedido = SituacaoPedidoIds.Pago },
+            new() { Id = 11, Data = new DateTime(2026, 11, 10, 0, 0, 0, DateTimeKind.Utc), IdSituacaoPedido = SituacaoPedidoIds.Pendente },
+        });
+        itemPedidoRepository.Setup(r => r.ListarPorPedidosAsync(It.IsAny<List<int>>())).ReturnsAsync(new List<ItemPedido>());
+        JogosNoBanco();
+        var service = CriarService();
+
+        // Act
+        var pedidos = await service.ListarMeusAsync();
+
+        // Assert
+        Assert.Equal(new[] { 12, 11 }, pedidos.Select(pedido => pedido.Pedido.Id));
+        Assert.Equal(new[] { "Pago", "Pendente" }, pedidos.Select(pedido => pedido.DescricaoSituacao));
+    }
+
+    [Fact]
+    public async Task ListarMeus_ItensDeCadaPedido_ComNomeDoJogoEPrecoPago()
+    {
+        // Arrange: o jogo 1 custava 100,00 na compra e hoje custa 150,00.
+        pedidoRepository.Setup(r => r.ListarPorUsuarioAsync(IdUsuarioLogado)).ReturnsAsync(new List<Pedido>
+        {
+            new() { Id = 12, IdSituacaoPedido = SituacaoPedidoIds.Pendente },
+            new() { Id = 11, IdSituacaoPedido = SituacaoPedidoIds.Pendente },
+        });
+        itemPedidoRepository.Setup(r => r.ListarPorPedidosAsync(It.IsAny<List<int>>())).ReturnsAsync(new List<ItemPedido>
+        {
+            new() { Id = 1, IdPedido = 11, IdJogo = 1, Quantidade = 2, ValorUnitario = 100.00m },
+            new() { Id = 2, IdPedido = 12, IdJogo = 2, Quantidade = 1, ValorUnitario = 59.90m },
+        });
+        JogosNoBanco(CriarJogo(1, 150.00m, 5), CriarJogo(2, 59.90m, 5));
+        var service = CriarService();
+
+        // Act
+        var pedidos = await service.ListarMeusAsync();
+
+        // Assert
+        var itemDoPedido11 = Assert.Single(pedidos.Single(pedido => pedido.Pedido.Id == 11).Itens);
+        Assert.Equal("Jogo 1", itemDoPedido11.NomeJogo);
+        Assert.Equal(2, itemDoPedido11.Item.Quantidade);
+        Assert.Equal(100.00m, itemDoPedido11.Item.ValorUnitario);
+        var itemDoPedido12 = Assert.Single(pedidos.Single(pedido => pedido.Pedido.Id == 12).Itens);
+        Assert.Equal("Jogo 2", itemDoPedido12.NomeJogo);
+    }
+
+    [Fact]
+    public async Task ListarMeus_SemPedidos_DevolveListaVaziaSemConsultarItens()
+    {
+        // Arrange
+        pedidoRepository.Setup(r => r.ListarPorUsuarioAsync(IdUsuarioLogado)).ReturnsAsync(new List<Pedido>());
+        var service = CriarService();
+
+        // Act
+        var pedidos = await service.ListarMeusAsync();
+
+        // Assert
+        Assert.Empty(pedidos);
+        itemPedidoRepository.Verify(r => r.ListarPorPedidosAsync(It.IsAny<List<int>>()), Times.Never);
+    }
 }

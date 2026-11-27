@@ -26,4 +26,13 @@ public class PedidoController(IPedidoService pedidoService) : ControllerBase
         return Created($"/api/Pedido/{criado.Pedido.Id}",
             new RetroGamesResponseApiModel<ListarPedidoResponseApiModel>(criado.ParaResponse()));
     }
+
+    /// <summary>GET /api/Pedido/meus (C05): os pedidos do usuário logado, do mais recente para o mais antigo.</summary>
+    [HttpGet("meus")]
+    public async Task<ActionResult<RetroGamesResponseApiModel<List<ListarPedidoResponseApiModel>>>> ListarMeus()
+    {
+        var pedidos = await pedidoService.ListarMeusAsync();
+        return Ok(new RetroGamesResponseApiModel<List<ListarPedidoResponseApiModel>>(
+            pedidos.Select(pedido => pedido.ParaResponse()).ToList()));
+    }
 }

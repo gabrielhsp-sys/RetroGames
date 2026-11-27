@@ -10,4 +10,7 @@ public interface IItemPedidoRepository
     /// RegistroDuplicadoException (UNIQUE co_pedido, co_jogo).
     /// </summary>
     Task InserirAsync(int idPedido, List<ItemPedido> itens);
+
+    /// <summary>Os itens de uma lista de pedidos, numa única consulta. Lista vazia devolve vazio.</summary>
+    Task<List<ItemPedido>> ListarPorPedidosAsync(List<int> idsPedido);
 }

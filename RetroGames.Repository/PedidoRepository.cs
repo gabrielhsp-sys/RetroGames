@@ -1,3 +1,4 @@
+using MySqlConnector;
 using RetroGames.Model.Model;
 
 namespace RetroGames.Repository;
@@ -18,5 +19,37 @@ public class PedidoRepository(RepositoryConfig config) : RepositoryBase(config),
 
         await ExecutarGravacaoAsync(comando);
         return (int)comando.LastInsertedId;
+    }
+
+    public async Task<List<Pedido>> ListarPorUsuarioAsync(int idUsuario)
+    {
+        await using var conexao = await CriarConexaoAsync();
+        // Empate na data (mesmo segundo): o id maior é o pedido mais recente.
+        await using var comando = CriarComando(conexao,
+            "SELECT co_seq_pedido, dt_pedido, vl_total, co_usuario, co_situacao_pedido FROM tb_pedido " +
+            "WHERE co_usuario = @idUsuario ORDER BY dt_pedido DESC, co_seq_pedido DESC");
+        AdicionarParametro(comando, "@idUsuario", idUsuario);
+        await using var leitor = await comando.ExecuteReaderAsync();
+
+        var pedidos = new List<Pedido>();
+        while (await leitor.ReadAsync())
+        {
+            pedidos.Add(Mapear(leitor));
+        }
+        return pedidos;
+    }
+
+    /// <summary>Converte a linha atual do leitor num Pedido, coluna por coluna.</summary>
+    private static Pedido Mapear(MySqlDataReader leitor)
+    {
+        return new Pedido
+        {
+            Id = leitor.GetInt32("co_seq_pedido"),
+            // dt_pedido guarda data e hora em UTC.
+            Data = DateTime.SpecifyKind(leitor.GetDateTime("dt_pedido"), DateTimeKind.Utc),
+            Total = leitor.GetDecimal("vl_total"),
+            IdUsuario = leitor.GetInt32("co_usuario"),
+            IdSituacaoPedido = leitor.GetInt32("co_situacao_pedido"),
+        };
     }
 }

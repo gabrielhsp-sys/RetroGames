@@ -80,6 +80,28 @@ public class PedidoService(IRepositorySet repositorio, IUsuarioAtualService usua
         return MontarDetalhes(new List<Pedido> { pedido }, itens, jogos, situacoes)[0];
     }
 
+    public async Task<List<PedidoDetalheServiceModel>> ListarMeusAsync()
+    {
+        var idUsuario = usuarioAtual.Id
+            ?? throw new InvalidOperationException("Meus pedidos exige um usuário logado.");
+
+        // Já vêm do SQL só os do usuário, do mais recente para o mais antigo.
+        var pedidos = await repositorio.Pedido.ListarPorUsuarioAsync(idUsuario);
+        if (pedidos.Count == 0)
+        {
+            return new List<PedidoDetalheServiceModel>();
+        }
+
+        // Sempre as mesmas quatro consultas, qualquer que seja o número de pedidos.
+        var itens = await repositorio.ItemPedido.ListarPorPedidosAsync(
+            pedidos.Select(pedido => pedido.Id).ToList());
+        var jogos = await repositorio.Jogo.ListarPorIdsAsync(
+            itens.Select(item => item.IdJogo).Distinct().ToList());
+        var situacoes = await repositorio.SituacaoPedido.ListarAsync();
+
+        return MontarDetalhes(pedidos, itens, jogos, situacoes);
+    }
+
     /// <summary>
     /// Combina pedidos, itens, jogos e situações com LINQ, mantendo a ordem dos pedidos
     /// recebidos. Só monta: as consultas já foram feitas por quem chama.
